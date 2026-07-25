@@ -1,144 +1,113 @@
 {
   "$schema": "teaching-blueprint/v1",
-  "id": "cs-networking-101",
-  "title": "计算机网络基础",
-  "subtitle": "从协议到实践",
-  "subject": "Computer Science / Networking",
+  "id": "blueprint-cs-networking-ch3",
+  "title": "计算机网络 · 传输层协议",
+  "subtitle": "端到端可靠数据传输与连接传输控制机制",
+  "subject": "计算机网络",
+  "theme": "dark",
   "targetAudience": {
     "level": "intermediate",
-    "description": "计算机专业大二学生，已修完操作系统",
-    "prerequisites": ["操作系统基础", "数据结构"]
+    "description": "计算机专业大二学生，已掌握网络层 IP 协议与 Socket 编程基础",
+    "prerequisites": ["IP 基础报文结构", "应用层 HTTP 协议基本概念"]
   },
   "teachingPhilosophy": {
     "taxonomy": "bloom",
-    "approach": "从具象到抽象，先观察现象再理解原理"
+    "approach": "以问题为导向（PBL）+ 交互式时序动画演练"
   },
-  "totalDuration": "90min",
+  "totalDuration": "90 分钟",
   "chapters": [
     {
-      "id": "ch-01",
-      "title": "传输层协议",
+      "id": "ch-03",
+      "title": "第三章 传输层协议与连接管理",
       "order": 1,
-      "duration": "30min",
+      "duration": "90 分钟",
       "learningObjectives": [
-        "理解 TCP 可靠传输的核心机制",
-        "掌握三次握手和四次挥手的流程与意义"
+        "掌握传输层为应用进程提供端到端通信的基本原理",
+        "理解 TCP 三次握手与四次挥手的状态迁移过程",
+        "掌握可靠传输机制（序号、确认应答、超时重传）"
       ],
       "knowledgePoints": [
         {
-          "id": "kp-tcp-handshake",
-          "title": "TCP 三次握手",
+          "id": "kp-3-1",
+          "title": "传输层服务与端口概念",
           "order": 1,
-          "duration": "12min",
+          "duration": "20 分钟",
           "cognitiveLevel": "understand",
-          "knowledgeType": "process",
-          "teachingObjectives": [
-            "能描述三次握手的完整流程",
-            "能解释为什么需要三次而不是两次",
-            "能识别 SYN/ACK 标志位的作用"
-          ],
-          "keyPoints": [
-            "SYN → SYN+ACK → ACK 的时序关系",
-            "序列号与确认号的初始化"
-          ],
-          "difficultPoints": [
-            "为什么两次握手不够（历史连接问题）",
-            "半连接队列与 SYN Flood 的关系"
-          ],
+          "teachingObjectives": ["复述 UDP 与 TCP 的服务差异", "理解端口号与复用分用的映射"],
+          "keyPoints": ["端到端通信与点到点通信的区别", "常用标准端口号 (80, 443, 22)"],
+          "difficultPoints": ["无连接 vs 面向连接在协议头部的体现"],
+          "knowledgeType": "concept",
           "strategy": {
-            "primaryForm": "animation",
-            "reasoning": "三次握手是一个典型的时序交互过程，涉及客户端与服务端之间的多轮消息传递，动画形式能清晰展示 SYN/ACK 标志位的变化和序列号的递增过程，帮助学生建立时序直觉",
-            "alternativeForms": ["diagram", "simulator"]
+            "primaryForm": "comparison-table",
+            "reasoning": "UDP 与 TCP 概念对比鲜明，适合采用对比卡片呈现",
+            "alternativeForms": ["slide"]
           },
           "resources": [
             {
-              "id": "res-tcp-handshake-anim",
-              "type": "interactive",
-              "form": "animation",
-              "title": "TCP 三次握手动画演示",
-              "description": "逐步展示客户端与服务端之间 SYN、SYN+ACK、ACK 三个报文的传递过程，支持单步播放和状态标注",
-              "priority": "required",
-              "spec": {
-                "interactionType": "step-through",
-                "visualElements": ["客户端节点", "服务端节点", "报文箭头", "状态标签", "序列号标注"],
-                "dataRequirements": ["三次握手的报文序列", "各阶段的连接状态", "序列号与确认号数值"],
-                "estimatedComplexity": "medium"
-              }
-            },
-            {
-              "id": "res-tcp-handshake-ppt",
+              "id": "res-3-1-ppt",
               "type": "ppt",
               "form": "slide",
-              "title": "TCP 三次握手讲解课件",
-              "description": "配合动画使用的讲解幻灯片，包含握手流程总结、标志位说明和常见问题",
+              "title": "传输层概述 PPT",
+              "description": "讲解 UDP/TCP 的异同与端口号映射",
               "priority": "required",
               "spec": {
                 "interactionType": null,
-                "visualElements": ["流程图", "标志位表格", "要点列表"],
-                "dataRequirements": ["三次握手流程描述", "SYN/ACK 标志位含义", "常见问题解答"],
+                "visualElements": ["对比表格", "端口分布图"],
+                "dataRequirements": ["UDP/TCP 协议头部对照表"],
                 "estimatedComplexity": "low"
               }
             }
           ],
           "dependencies": [],
-          "tags": ["tcp", "reliability", "connection-management"]
+          "tags": ["传输层", "端口", "UDP", "TCP"]
         },
         {
-          "id": "kp-tcp-teardown",
-          "title": "TCP 四次挥手",
+          "id": "kp-3-2",
+          "title": "TCP 三次握手与连接建立",
           "order": 2,
-          "duration": "10min",
-          "cognitiveLevel": "understand",
+          "duration": "40 分钟",
+          "cognitiveLevel": "apply",
+          "teachingObjectives": ["能画出三次握手报文交互图", "能分析为什么必须是三次握手而非两次"],
+          "keyPoints": ["SYN / SYN+ACK / ACK 报文标志位与序号初始同步", "异常失效连接请求处理"],
+          "difficultPoints": ["网络延迟导致的历史旧连接请求对服务端的干扰"],
           "knowledgeType": "process",
-          "teachingObjectives": [
-            "能描述四次挥手的完整流程",
-            "能解释 TIME_WAIT 状态的作用"
-          ],
-          "keyPoints": [
-            "FIN → ACK → FIN → ACK 的时序",
-            "TIME_WAIT 等待 2MSL 的原因"
-          ],
-          "difficultPoints": [
-            "为什么挥手需要四次而握手只需三次",
-            "TIME_WAIT 期间端口不可复用的影响"
-          ],
           "strategy": {
             "primaryForm": "animation",
-            "reasoning": "四次挥手是非对称的断开过程，主动关闭方和被动关闭方的状态转换不同，需要逐步可视化才能让学生理解为什么不能合并为三次，以及 TIME_WAIT 存在的必要性",
-            "alternativeForms": ["timeline", "diagram"]
+            "reasoning": "报文在客户端与服务端之间的时序传递带有强状态迁移属性，必须通过分步互动动画展现",
+            "alternativeForms": ["flowchart", "slide"]
           },
           "resources": [
             {
-              "id": "res-tcp-teardown-anim",
-              "type": "interactive",
-              "form": "animation",
-              "title": "TCP 四次挥手动画演示",
-              "description": "逐步展示 FIN/ACK 报文传递过程，突出显示 TIME_WAIT 状态及其持续时间",
-              "priority": "required",
-              "spec": {
-                "interactionType": "step-through",
-                "visualElements": ["客户端节点", "服务端节点", "FIN/ACK 报文箭头", "状态转换标签", "TIME_WAIT 计时器"],
-                "dataRequirements": ["四次挥手的报文序列", "各阶段连接状态", "2MSL 时间说明"],
-                "estimatedComplexity": "medium"
-              }
-            },
-            {
-              "id": "res-tcp-teardown-ppt",
+              "id": "res-3-2-ppt",
               "type": "ppt",
               "form": "slide",
-              "title": "TCP 四次挥手讲解课件",
-              "description": "配合动画使用的讲解幻灯片，包含挥手流程、TIME_WAIT 解释和与握手的对比",
+              "title": "TCP 三次握手讲解 PPT",
+              "description": "讲解三次握手流程与 SYN 洪泛攻击防护",
               "priority": "required",
               "spec": {
                 "interactionType": null,
-                "visualElements": ["流程图", "状态转换图", "对比表格"],
-                "dataRequirements": ["四次挥手流程描述", "TIME_WAIT 作用说明", "握手与挥手对比"],
+                "visualElements": ["时序图", "要点列表"],
+                "dataRequirements": ["SYN/ACK/seq/ack 字段定义"],
                 "estimatedComplexity": "low"
+              }
+            },
+            {
+              "id": "res-3-2-interactive",
+              "type": "interactive",
+              "form": "animation",
+              "title": "TCP 三次握手互动演练",
+              "description": "学生可通过单步点击演练报文发送、观察 SEQ/ACK 变化与状态迁移",
+              "priority": "required",
+              "spec": {
+                "interactionType": "step-through",
+                "visualElements": ["Client 节点", "Server 节点", "动态报文包", "状态机看板"],
+                "dataRequirements": ["报文序列数据", "状态转变规则表"],
+                "estimatedComplexity": "medium"
               }
             }
           ],
-          "dependencies": ["kp-tcp-handshake"],
-          "tags": ["tcp", "connection-release"]
+          "dependencies": ["kp-3-1"],
+          "tags": ["TCP", "三次握手", "连接建立", "状态机"]
         }
       ]
     }
