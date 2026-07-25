@@ -6,14 +6,14 @@
 
 *将冗长复杂的教学大纲，一键转化为美观、高互动、零依赖的 Web 课件与互动教学网页*
 
-[特性](#-核心特性) • [架构](#-系统架构) • [视觉主题](#-内置视觉主题) • [快速开始](#-快速开始) • [输出示例](#-输出样例展示) • [设计规范](#-设计规范与约束)
+[特性](#-核心特性) • [架构](#-系统架构) • [视觉主题](#-内置视觉主题) • [自动化工具](#-自动化校验工具) • [快速开始](#-快速开始) • [输出示例](#-输出样例展示) • [设计规范](#-设计规范与约束)
 
 ---
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Agent](https://img.shields.io/badge/Agent-TRAE%20%7C%20Cursor%20%7C%20OpenClaw-8A2BE2.svg)
 ![Output](https://img.shields.io/badge/Output-Single--file%20HTML5-success.svg)
-![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)
+![Tooling](https://img.shields.io/badge/Node.js%20Tooling-Zero%20Dependency-brightgreen.svg)
 
 </div>
 
@@ -29,16 +29,16 @@
 
 ## ✨ 核心特性
 
-- 🎯 **Blueprint-First 架构**
-  - 单一数据源原则。大纲首先被解析并编译为符合 JSON Schema 规范的 `blueprint.json`，彻底解耦大纲解析与后续资源生成。
+- 🎯 **Blueprint-First 架构与极简大纲智能扩写**
+  - 单一数据源原则。大纲首先被解析并编译为符合 JSON Schema 规范的 `blueprint.json`。内置 **Syllabus Enrichment Mode**，即使输入仅为一句话（如“生成 Python 面向对象课件”），也能智能推断并自动扩写为标准的 90 分钟教学蓝图。
 - 💡 **Strategy-Engine 决策驱动**
   - 在生成前，AI 策略引擎先根据知识点的**认知层级（Bloom 认知分类）**与**抽象程度**，智能决定最佳呈现形式（如控制台模拟器、流程步进、参数调优、对比卡片等）。
-- 🎨 **Multi-Theme 多主题视觉系统**
-  - 内置 `ocean` (通用海蓝)、`dark` (极客暗黑)、`academic` (学术典雅)、`botanical` (清新自然) 4 套现代设计主题，自动匹配不同学科风格。
-- ⚡ **零依赖单文件 (Zero-Dependency Single File)**
-  - 交付物均为纯 HTML/CSS/JS 构成的单文件，离线双击直接在任何现代浏览器播放，无需 Node.js 环境、无外部 CDN 加载风险。
-- 🛡️ **三层 QA 闸门与自修复机制 (Quality Gate & Self-Repair)**
-  - 内置 `Technical → Functional → Pedagogical` 三层质量检验模型。若代码校验未通过，自动触发外科手术式的 `Self-Repair Engine` 进行局部带错自修复。
+- 🎨 **Multi-Theme 多主题视觉系统与通用 UI 组件库**
+  - 内置 `ocean` (通用海蓝)、`dark` (极客暗黑)、`academic` (学术典雅)、`botanical` (清新自然) 4 套现代设计主题，且模板内置分步节点 (`.step-flow`) 与左右对比栏 (`.compare-split`)。
+- 🏛️ **Course Portal 课程导航大厅**
+  - 提供 `portal-base.html` 模板，自动将一次批量生成的所有章节 PPT (`slides.html`) 与交互网页 (`interactive-*.html`) 汇聚在优雅的 `index.html` Portal 导航主页中。
+- 🛠️ **自动化 QA 校验与外科手术式自修复 (Self-Repair Engine)**
+  - 提供零依赖 Node.js 校验脚本 `scripts/qa-checker.js` 执行硬性代码检测。若未通过 QA 检查，自动调起 `self-repair.md` 进行带错局部精准修正。
 
 ---
 
@@ -53,7 +53,7 @@ TRGS 的端到端流水线包含 6 个标准阶段：
                                 │
                                 ▼
                     ┌────────────────────────┐
-                    │   Blueprint Builder    │  ◄── 解析结构与识别知识点
+                    │   Blueprint Builder    │  ◄── 支持极简大纲智能扩写 (Enrichment Mode)
                     └───────────┬────────────┘
                                 │
                                 ▼
@@ -74,15 +74,16 @@ TRGS 的端到端流水线包含 6 个标准阶段：
                                 │
                                 ▼
                     ┌────────────────────────┐
-                    │    Quality Checker     │  ◄── 三层 QA 检查
+                    │    Quality Checker     │  ◄── 支持 node scripts/qa-checker.js
                     └───────────┬────────────┘
                                 │
                      ┌──────────┴──────────┐
                 FAIL │                     │ PASS
                      ▼                     ▼
-          ┌────────────────────┐   ┌────────────────┐
-          │ Self-Repair Engine │   │   交付最终文件  │
-          └────────────────────┘   └────────────────┘
+          ┌────────────────────┐   ┌─────────────────────────┐
+          │ Self-Repair Engine │   │  交付文件 + Portal 主页 │
+          │ (self-repair.md)   │   │      (index.html)       │
+          └────────────────────┘   └─────────────────────────┘
 ```
 
 ---
@@ -102,33 +103,65 @@ TRGS 针对不同学科和场景设计了 4 套现代风格的 CSS Token 主题�
 
 ---
 
+## 🛠 自动化校验工具
+
+项目内置零依赖原生 Node.js 代码校验脚本 `scripts/qa-checker.js`，可独立在终端中运行，自动对生成的 HTML 进行 AST 语法检查、违禁 API 检测与文件体积核查：
+
+```bash
+# 校验交互组件 HTML
+node scripts/qa-checker.js test-output/chapter-01/interactive-tcp-handshake.html
+
+# 校验 Web PPT HTML
+node scripts/qa-checker.js test-output/chapter-01/slides.html --type=ppt
+```
+
+**JSON QA Report 输出示例：**
+```json
+{
+  "resourceId": "interactive-tcp-handshake",
+  "result": "PASS",
+  "layer": "technical",
+  "fileSizeKB": "33.27KB",
+  "checks": [
+    { "id": "T1", "name": "DOCTYPE 声明", "passed": true, "detail": "存在 <!DOCTYPE html>" },
+    { "id": "T4", "name": "无外部资源引用", "passed": true, "detail": "无外部 HTTP/HTTPS 资源引用" },
+    { "id": "T5", "name": "无禁止 API", "passed": true, "detail": "未检测到违禁 API" },
+    { "id": "T7", "name": "JS 语法正确", "passed": true, "detail": "所有内联 JavaScript 语法解析成功" }
+  ]
+}
+```
+
+---
+
 ## 📁 项目目录结构
 
 ```
 trgs-skill/
+├── scripts/
+│   └── qa-checker.js            # 🛠️ 零依赖原生 Node.js 技术 QA 校验脚本
 ├── skill/                      # 🧠 Agent Skill 实施主目录
 │   ├── SKILL.md                # Skill 主入口规则与触发词定义
 │   ├── workflow.md             # 端到端 Agent 工作流编排指南
 │   ├── schemas/
-│   │   └── blueprint-schema.json # Blueprint 数据结构 JSON Schema
-│   ├── prompts/                # 🤖 5 大核心 Prompt 引擎
-│   │   ├── blueprint-builder.md     # 1. 大纲 → 结构化蓝图
+│   │   └── blueprint-schema.json # Blueprint 数据结构 JSON Schema (支持 theme)
+│   ├── prompts/                # 🤖 6 大核心 Prompt 引擎
+│   │   ├── blueprint-builder.md     # 1. 大纲 → 结构化蓝图 (含智能扩写)
 │   │   ├── strategy-engine.md       # 2. 知识点 → 教学形式策略
 │   │   ├── ppt-generator.md         # 3. 蓝图 → Web PPT 生成
 │   │   ├── interactive-generator.md # 4. 蓝图 → 可交互网页生成
 │   │   ├── quality-checker.md       # 5. 三层 QA 质量检验
-│   │   └── self-repair.md           # 6. 带错局部自修复 Engine
+│   │   └── self-repair.md           # 6. 带错局部自修复 Engine Prompt
 │   ├── templates/              # 🎨 核心 HTML 骨架模板
-│   │   ├── ppt-base.html            # PPT 基础模板 (含全屏/翻页/键盘快捷键)
-│   │   └── interactive-base.html    # 交互组件模板 (含控制面板/状态机)
+│   │   ├── ppt-base.html            # PPT 基础模板 (含全屏/翻页/多主题)
+│   │   ├── interactive-base.html    # 交互组件模板 (含控制面板/UI 组件)
+│   │   └── portal-base.html         # 课程导航大厅 Portal 模板
 │   ├── rules/
 │   │   └── generation-rules.md      # 技术约束、复杂度上限与降级规则
-│   └── examples/               # 📚 官方范例 (包含完整 Blueprint 与产物)
-│       ├── cs-networking/           # 示例 1: 计算机网络 (TCP 握手)
-│       ├── data-structures/         # 示例 2: 数据结构 (二叉树)
-│       └── frontend-dev/            # 示例 3: 前端开发 (Flexbox 布局)
+│   └── examples/               # 📚 官方范例
+│       ├── cs-networking/           # 示例 1: 计算机网络 (包含标准 blueprint.json)
+│       ├── data-structures/         # 示例 2: 数据结构
+│       └── frontend-dev/            # 示例 3: 前端开发
 ├── spec/                       # 📋 详细系统设计规范文档 (00-05)
-├── test-output/                # 🧪 测试与验证输出目录
 └── README.md                   # 📖 本说明文档
 ```
 
@@ -142,17 +175,14 @@ trgs-skill/
 将 `skill/` 目录拷贝到你的 AI Agent 插件或 Skill 路径中（如 `.gemini/skills/` 或 Agent 配置目录）：
 
 ```bash
-git clone https://github.com/your-org/trgs-skill.git
+git clone https://github.com/fefl-ai/trgs-skill.git
 ```
-
-#### 方式 B：使用预打包 Zip
-解压 `TRGS-Skill-v1.zip` 压缩包到你的项目 Skill 路径下。
 
 ---
 
 ### 2. 触发关键词
 
-在兼容的 AI Agent（TRAE / Cursor / OpenClaw 等）对话框中输入以下关键词即可自动触发 Skill：
+在兼容的 AI Agent（TRAE / Cursor / OpenClaw / Gemini Agent 等）对话框中输入以下关键词即可自动触发 Skill：
 
 - *"根据这份教学大纲生成 PPT 课件"*
 - *"帮我制作一个关于 TCP 三次握手的交互式教学网页"*
@@ -177,10 +207,12 @@ git clone https://github.com/your-org/trgs-skill.git
 
 TRGS 生成的交付产物可以直接双击运行：
 
-1. **Web PPT (`slides.html`)**
+1. **课程 Portal 大厅 (`index.html`)**
+   - 包含课程元数据与完整章节目录，一键跳转各章节 PPT 与交互演练。
+2. **Web PPT (`slides.html`)**
    - 16:9 响应式比例，支持 `←` `→` 键翻页、`F` 全屏切换、数字跳转及打印模式。
-2. **交互式演示网页 (`interactive-*.html`)**
-   - 带有控制面板、前进/后退分布演算、参数调节滑块与重置路径，帮助学生在实操中化解难点。
+3. **交互式演示网页 (`interactive-*.html`)**
+   - 带有控制面板、分步动画演算、参数调节滑块与重置路径，帮助学生在实操中化解难点。
 
 ---
 
