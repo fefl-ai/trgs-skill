@@ -74,8 +74,7 @@ Step 6: 交付
 
 ```
 skill/
-├── SKILL.md                     ← 本文件（主入口）
-├── workflow.md                  ← 端到端流程编排
+├── SKILL.md                     ← 本文件（主入口与工作流编排）
 ├── schemas/
 │   └── blueprint-schema.json    ← Blueprint JSON Schema
 ├── prompts/
@@ -92,9 +91,7 @@ skill/
 ├── rules/
 │   └── generation-rules.md      ← 技术约束 + 降级策略
 └── examples/
-    ├── cs-networking/           ← 示例：计算机网络
-    ├── data-structures/         ← 示例：数据结构
-    └── frontend-dev/            ← 示例：前端开发
+    └── cs-networking/           ← 标杆示例：计算机网络大纲蓝图
 ```
 
 ## 约束

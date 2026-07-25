@@ -140,8 +140,7 @@ trgs-skill/
 ├── scripts/
 │   └── qa-checker.js            # 🛠️ 零依赖原生 Node.js 技术 QA 校验脚本
 ├── skill/                      # 🧠 Agent Skill 实施主目录
-│   ├── SKILL.md                # Skill 主入口规则与触发词定义
-│   ├── workflow.md             # 端到端 Agent 工作流编排指南
+│   ├── SKILL.md                # Skill 主入口规则与工作流定义
 │   ├── schemas/
 │   │   └── blueprint-schema.json # Blueprint 数据结构 JSON Schema (支持 theme)
 │   ├── prompts/                # 🤖 6 大核心 Prompt 引擎
@@ -157,10 +156,8 @@ trgs-skill/
 │   │   └── portal-base.html         # 课程导航大厅 Portal 模板
 │   ├── rules/
 │   │   └── generation-rules.md      # 技术约束、复杂度上限与降级规则
-│   └── examples/               # 📚 官方范例
-│       ├── cs-networking/           # 示例 1: 计算机网络 (包含标准 blueprint.json)
-│       ├── data-structures/         # 示例 2: 数据结构
-│       └── frontend-dev/            # 示例 3: 前端开发
+│   └── examples/               # 📚 官方标杆范例
+│       └── cs-networking/           # 计算机网络大纲蓝图范例 (包含标准 blueprint.json)
 ├── spec/                       # 📋 详细系统设计规范文档 (00-05)
 └── README.md                   # 📖 本说明文档
 ```
