@@ -1,0 +1,49 @@
+name: Agent Issue Fix Execution
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  execute_fix:
+    if: github.event.issue.pull_request == null && contains(github.event.comment.body, '/approve')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Agent Execution Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          node scripts/agent-issue-handler.js execute
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "fix: resolved issue #${{ github.event.issue.number }} by Agent"
+          branch: "agent/fix-issue-${{ github.event.issue.number }}"
+          title: "🤖 [Agent Fix] ${{ github.event.issue.title }}"
+          body: |
+            Resolved issue #${{ github.event.issue.number }}.
+            
+            ### Automated Checks
+            - Runs `node scripts/qa-checker.js` passed.
+            
+            Please review and merge.
+          labels: "agent-pr, awaiting-merge"
