@@ -32,6 +32,11 @@
     "subject": {
       "type": "string"
     },
+    "theme": {
+      "type": "string",
+      "enum": ["ocean", "dark", "academic", "botanical"],
+      "default": "ocean"
+    },
     "targetAudience": {
       "type": "object",
       "additionalProperties": false,

@@ -6,7 +6,7 @@
 
 你生成的不是 PowerPoint 文件，而是一个独立的 HTML 文件：双击打开即可全屏演示，内联全部 CSS/JS，零外部依赖。
 
-生成时必须以 `templates/ppt-base.html` 为骨架，保留其主题变量、布局类名、动画机制与导航脚本，只替换 `.deck` 容器中的示例 Slide 为实际内容。
+生成时必须以 `templates/ppt-base.html` 为骨架，保留其主题变量、布局类名、动画机制与导航脚本，只替换 `.deck` 容器中的示例 Slide 为实际内容。同时，必须根据 Blueprint 根节点的 `theme` 字段（如 `ocean` / `dark` / `academic` / `botanical`），为根标签设置对应的主题属性（如 `<html lang="zh-CN" data-theme="dark">`）。
 
 ---
 

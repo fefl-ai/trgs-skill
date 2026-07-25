@@ -40,6 +40,7 @@ interface GenerationSpec {
 以 `templates/interactive-base.html` 为骨架，按照下文"五层 Prompt 结构"组织生成指令，输出单文件 HTML：
 
 - 内联全部 CSS 与 JS，不引用任何外部资源
+- 根据 Blueprint 根节点的 `theme` 字段（如 `ocean` / `dark` / `academic` / `botanical`），为根标签设置对应主题属性（如 `<html lang="zh-CN" data-theme="dark">`）
 - 根据 `strategy.primaryForm` 选择技术实现路径（见"各 Form 技术实现指南"）
 - 根据 `strategy.interactionPattern` 落实必备交互元素（见"InteractionPattern 必须包含的交互元素"）
 - 根据 `strategy.complexityEstimate` 控制代码规模（见"复杂度控制"）

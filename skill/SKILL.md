@@ -83,7 +83,8 @@ skill/
 │   ├── strategy-engine.md       ← 知识点 → 教学形式决策
 │   ├── ppt-generator.md         ← Blueprint → HTML PPT
 │   ├── interactive-generator.md ← Blueprint → 交互网页
-│   └── quality-checker.md       ← 三层质量检查
+│   ├── quality-checker.md       ← 三层质量检查
+│   └── self-repair.md           ← 代码诊断与自修复 Prompt
 ├── templates/
 │   ├── ppt-base.html            ← PPT HTML 骨架模板
 │   └── interactive-base.html    ← 交互组件 HTML 骨架模板

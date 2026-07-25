@@ -339,7 +339,7 @@ PPT 文件仅执行：
 QA FAIL
   │
   ▼
-触发自修复（Self-Repair）── 最多 2 次
+触发自修复（Self-Repair）：调用 `prompts/self-repair.md` 传入源码 + QA Report ── 最多 2 次
   │
   ├── 修复成功 → 重新 QA → PASS → 继续
   │

@@ -6,7 +6,7 @@
 <title>第三章 传输层协议 · 计算机网络</title>
 <script>document.documentElement.classList.remove('no-js');</script>
 <style>
-:root {
+:root, [data-theme="ocean"] {
   --color-primary: #1a365d;
   --color-secondary: #2c5282;
   --color-accent: #ed8936;
@@ -15,6 +15,8 @@
   --color-text: #1a202c;
   --color-text-secondary: #4a5568;
   --color-code: #2d3748;
+  --bg-gradient-1: rgba(44, 82, 130, 0.10);
+  --bg-gradient-2: rgba(237, 137, 54, 0.09);
   --font-title: system-ui, -apple-system, sans-serif;
   --font-body: system-ui, -apple-system, sans-serif;
   --font-code: 'SF Mono', 'Fira Code', monospace;
@@ -22,6 +24,48 @@
   --content-gap: 1.5rem;
   --radius: 8px;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --color-primary: #38bdf8;
+  --color-secondary: #818cf8;
+  --color-accent: #f59e0b;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-code: #020617;
+  --bg-gradient-1: rgba(56, 189, 248, 0.12);
+  --bg-gradient-2: rgba(245, 158, 11, 0.10);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="academic"] {
+  --color-primary: #7c1d1d;
+  --color-secondary: #1e3a8a;
+  --color-accent: #d97706;
+  --color-bg: #fdfbf7;
+  --color-surface: #f4efe6;
+  --color-text: #292524;
+  --color-text-secondary: #57534e;
+  --color-code: #1c1917;
+  --bg-gradient-1: rgba(124, 29, 29, 0.08);
+  --bg-gradient-2: rgba(30, 58, 138, 0.08);
+  --shadow: 0 4px 6px rgba(41, 37, 36, 0.08);
+}
+
+[data-theme="botanical"] {
+  --color-primary: #14532d;
+  --color-secondary: #047857;
+  --color-accent: #d97706;
+  --color-bg: #f6fbf7;
+  --color-surface: #e8f5e9;
+  --color-text: #14231a;
+  --color-text-secondary: #4b6354;
+  --color-code: #102a1d;
+  --bg-gradient-1: rgba(20, 83, 45, 0.10);
+  --bg-gradient-2: rgba(217, 119, 6, 0.09);
+  --shadow: 0 4px 6px rgba(20, 35, 26, 0.10);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,8 +76,8 @@ body {
   font-family: var(--font-body);
   color: var(--color-text);
   background:
-    radial-gradient(1100px 560px at 88% -12%, rgba(44, 82, 130, 0.10), transparent 62%),
-    radial-gradient(900px 520px at -8% 112%, rgba(237, 137, 54, 0.09), transparent 58%),
+    radial-gradient(1100px 560px at 88% -12%, var(--bg-gradient-1), transparent 62%),
+    radial-gradient(900px 520px at -8% 112%, var(--bg-gradient-2), transparent 58%),
     var(--color-surface);
   overflow: hidden;
   display: grid;

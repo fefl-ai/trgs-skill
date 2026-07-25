@@ -201,9 +201,9 @@ Layer 3 判定：P1–P11 中任何一项不满足，即判定 Layer 3 FAIL。
 
 | 失败层级 | 处理方式 |
 |---|---|
-| Technical FAIL | 返回 Interactive Generator Phase 4（Self-Repair），携带具体错误详情（检查编号 + 错误描述） |
-| Functional FAIL | 返回 Interactive Generator Phase 4（Self-Repair），携带缺失功能描述（缺少的交互元素 / 状态缺陷） |
-| Pedagogical FAIL | 返回 Interactive Generator Phase 2（重新生成），携带重述的教学目标（keyPoints、difficultPoints、cognitiveLevel） |
+| Technical FAIL | 路由至 Self-Repair Engine（`prompts/self-repair.md`），提供源码 + QA Report 进行局部精准修复 |
+| Functional FAIL | 路由至 Self-Repair Engine（`prompts/self-repair.md`），补充缺失交互元素/视觉反馈/重置逻辑 |
+| Pedagogical FAIL | 路由至 Self-Repair Engine（`prompts/self-repair.md`）调优展示或重发 Phase 2 生成 |
 
 返修后的资源必须重新走完整的三层检查流程，不得只复查上次失败项。
 

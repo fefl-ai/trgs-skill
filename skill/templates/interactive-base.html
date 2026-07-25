@@ -6,7 +6,7 @@
   <title>交互组件标题</title>
   <style>
     /* === Theme Variables === */
-    :root {
+    :root, [data-theme="ocean"] {
       --color-primary: #0e7490;
       --color-secondary: #155e75;
       --color-accent: #f59e0b;
@@ -22,6 +22,39 @@
       --radius-md: 12px;
       --shadow-card: 0 2px 12px rgba(22, 48, 47, 0.08);
       --transition-fast: 160ms ease;
+    }
+
+    [data-theme="dark"] {
+      --color-primary: #38bdf8;
+      --color-secondary: #818cf8;
+      --color-accent: #f59e0b;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-text-secondary: #94a3b8;
+      --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    [data-theme="academic"] {
+      --color-primary: #7c1d1d;
+      --color-secondary: #1e3a8a;
+      --color-accent: #d97706;
+      --color-bg: #fdfbf7;
+      --color-surface: #ffffff;
+      --color-text: #292524;
+      --color-text-secondary: #57534e;
+      --shadow-card: 0 2px 12px rgba(41, 37, 36, 0.08);
+    }
+
+    [data-theme="botanical"] {
+      --color-primary: #14532d;
+      --color-secondary: #047857;
+      --color-accent: #d97706;
+      --color-bg: #f6fbf7;
+      --color-surface: #ffffff;
+      --color-text: #14231a;
+      --color-text-secondary: #4b6354;
+      --shadow-card: 0 2px 12px rgba(20, 35, 26, 0.08);
     }
 
     /* === Reset === */

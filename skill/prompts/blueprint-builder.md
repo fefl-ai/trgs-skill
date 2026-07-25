@@ -29,6 +29,7 @@
   - `title`：课程标题
   - `subtitle`：课程副标题，可为 `null`
   - `subject`：学科领域
+  - `theme`：视觉主题，取值为 `"ocean"` (默认/网络通用) | `"dark"` (计算机/编程) | `"academic"` (人文/数理/学术) | `"botanical"` (生物/环境/地理)
   - `targetAudience`：目标受众对象
     - `level`：取值为 `beginner` | `intermediate` | `advanced`
     - `description`：受众描述

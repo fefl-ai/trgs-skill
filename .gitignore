@@ -1,4 +1,5 @@
-*
-!.gitignore
-!skill/
-!skill/**
+TRGS-Skill-v1.zip
+test-output/
+.DS_Store
+.trae/
+
