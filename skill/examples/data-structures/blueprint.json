@@ -1,0 +1,148 @@
+{
+  "$schema": "teaching-blueprint/v1",
+  "id": "cs-ds-201",
+  "title": "数据结构与算法",
+  "subtitle": "排序算法专题",
+  "subject": "Computer Science / Data Structures",
+  "targetAudience": {
+    "level": "intermediate",
+    "description": "计算机专业大二学生",
+    "prerequisites": ["程序设计基础", "离散数学"]
+  },
+  "teachingPhilosophy": {
+    "taxonomy": "bloom",
+    "approach": "从可视化入手，先建立直觉再分析复杂度"
+  },
+  "totalDuration": "90min",
+  "chapters": [
+    {
+      "id": "ch-01",
+      "title": "高级排序算法",
+      "order": 1,
+      "duration": "35min",
+      "learningObjectives": [
+        "掌握快速排序的核心思想与实现",
+        "能分析快速排序的时间复杂度"
+      ],
+      "knowledgePoints": [
+        {
+          "id": "kp-quicksort-partition",
+          "title": "快速排序：分区操作",
+          "order": 1,
+          "duration": "15min",
+          "cognitiveLevel": "apply",
+          "knowledgeType": "procedure",
+          "teachingObjectives": [
+            "能手动执行分区操作",
+            "能理解基准元素的选择策略",
+            "能追踪指针移动过程"
+          ],
+          "keyPoints": [
+            "Lomuto 分区方案",
+            "指针移动与元素交换",
+            "基准归位"
+          ],
+          "difficultPoints": [
+            "分区过程中指针移动的时序",
+            "等值元素的处理"
+          ],
+          "strategy": {
+            "primaryForm": "animation",
+            "reasoning": "分区操作的核心在于指针移动和元素交换的时序过程，学生需要逐步观察 i 和 j 指针如何扫描数组、何时触发交换、基准如何归位，动画形式能让学生清晰追踪每一步的状态变化",
+            "alternativeForms": ["simulator", "code-playground"]
+          },
+          "resources": [
+            {
+              "id": "res-quicksort-partition-anim",
+              "type": "interactive",
+              "form": "animation",
+              "title": "快速排序分区操作动画",
+              "description": "可视化展示 Lomuto 分区方案中指针移动、元素比较与交换的完整过程，支持拖拽调整数组元素",
+              "priority": "required",
+              "spec": {
+                "interactionType": "drag-and-drop",
+                "visualElements": ["数组柱状图", "指针标记", "基准元素高亮", "交换动画", "已排序区域着色"],
+                "dataRequirements": ["待排序数组", "分区步骤序列", "指针位置变化记录"],
+                "estimatedComplexity": "medium"
+              }
+            },
+            {
+              "id": "res-quicksort-partition-ppt",
+              "type": "ppt",
+              "form": "slide",
+              "title": "快速排序分区操作课件",
+              "description": "配合动画使用的讲解幻灯片，包含 Lomuto 分区伪代码、关键步骤图解和注意事项",
+              "priority": "required",
+              "spec": {
+                "interactionType": null,
+                "visualElements": ["伪代码块", "步骤截图", "要点列表"],
+                "dataRequirements": ["Lomuto 分区伪代码", "关键步骤说明", "边界条件处理"],
+                "estimatedComplexity": "low"
+              }
+            }
+          ],
+          "dependencies": [],
+          "tags": ["sorting", "quicksort", "partition"]
+        },
+        {
+          "id": "kp-quicksort-complexity",
+          "title": "快速排序：复杂度分析",
+          "order": 2,
+          "duration": "12min",
+          "cognitiveLevel": "analyze",
+          "knowledgeType": "principle",
+          "teachingObjectives": [
+            "能推导最好/最坏/平均情况复杂度",
+            "能解释为什么平均是 O(n log n)"
+          ],
+          "keyPoints": [
+            "递归树分析",
+            "最坏情况触发条件",
+            "随机化基准选择"
+          ],
+          "difficultPoints": [
+            "递归树的层数与每层工作量",
+            "为什么最坏是 O(n²)"
+          ],
+          "strategy": {
+            "primaryForm": "simulator",
+            "reasoning": "复杂度分析需要学生理解不同基准选择策略如何影响递归深度和每层工作量，模拟器允许学生调整参数（数组规模、基准选择策略、数据分布）实时观察递归树形态变化，建立参数与复杂度之间的因果直觉",
+            "alternativeForms": ["animation", "svg-visualization"]
+          },
+          "resources": [
+            {
+              "id": "res-quicksort-complexity-sim",
+              "type": "interactive",
+              "form": "simulator",
+              "title": "快速排序复杂度模拟器",
+              "description": "允许学生调整数组规模、数据分布和基准选择策略，实时生成递归树并统计比较次数和递归深度",
+              "priority": "required",
+              "spec": {
+                "interactionType": "parameter-control",
+                "visualElements": ["递归树可视化", "参数控制面板", "统计仪表盘", "复杂度曲线对比"],
+                "dataRequirements": ["不同规模的测试数组", "多种基准选择策略", "递归深度与比较次数统计"],
+                "estimatedComplexity": "high"
+              }
+            },
+            {
+              "id": "res-quicksort-complexity-ppt",
+              "type": "ppt",
+              "form": "slide",
+              "title": "快速排序复杂度分析课件",
+              "description": "配合模拟器使用的讲解幻灯片，包含递归树推导过程、数学归纳和结论总结",
+              "priority": "required",
+              "spec": {
+                "interactionType": null,
+                "visualElements": ["递归树图示", "数学公式", "复杂度对比表"],
+                "dataRequirements": ["递归树层数推导", "最好最坏平均情况分析", "随机化策略说明"],
+                "estimatedComplexity": "low"
+              }
+            }
+          ],
+          "dependencies": ["kp-quicksort-partition"],
+          "tags": ["sorting", "complexity", "recursion"]
+        }
+      ]
+    }
+  ]
+}

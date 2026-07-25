@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第三章 传输层协议 · 计算机网络</title>
+<script>document.documentElement.classList.remove('no-js');</script>
+<style>
+:root {
+  --color-primary: #1a365d;
+  --color-secondary: #2c5282;
+  --color-accent: #ed8936;
+  --color-bg: #ffffff;
+  --color-surface: #f7fafc;
+  --color-text: #1a202c;
+  --color-text-secondary: #4a5568;
+  --color-code: #2d3748;
+  --font-title: system-ui, -apple-system, sans-serif;
+  --font-body: system-ui, -apple-system, sans-serif;
+  --font-code: 'SF Mono', 'Fira Code', monospace;
+  --slide-padding: 4rem;
+  --content-gap: 1.5rem;
+  --radius: 8px;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background:
+    radial-gradient(1100px 560px at 88% -12%, rgba(44, 82, 130, 0.10), transparent 62%),
+    radial-gradient(900px 520px at -8% 112%, rgba(237, 137, 54, 0.09), transparent 58%),
+    var(--color-surface);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.deck {
+  position: relative;
+  width: min(100vw, 177.78vh);
+  aspect-ratio: 16 / 9;
+  container-type: size;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 48px;
+  padding: 5cqi;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), 0 30px 70px rgba(26, 54, 93, 0.14);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(5%) scale(0.985);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.5s;
+}
+
+.slide.before { transform: translateX(-5%) scale(0.985); }
+
+.slide.active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slide::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  height: 0.6cqi;
+  background: linear-gradient(90deg, var(--color-accent) 0 8cqi, var(--color-primary) 8cqi 100%);
+}
+
+.kicker {
+  font-size: 13px;
+  font-size: 1.35cqi;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.slide-title {
+  font-family: var(--font-title);
+  font-size: 46px;
+  font-size: 4.6cqi;
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+}
+
+.subtitle {
+  font-size: 20px;
+  font-size: 2.15cqi;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-secondary);
+}
+
+.caption {
+  font-size: 14px;
+  font-size: 1.4cqi;
+  color: var(--color-text-secondary);
+}
+
+.rule {
+  width: 64px;
+  width: 6.5cqi;
+  height: 6px;
+  height: 0.55cqi;
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+
+.slide-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--content-gap);
+  gap: 1.6cqi;
+  margin-bottom: 36px;
+  margin-bottom: 3.6cqi;
+}
+
+.slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide[data-layout="title"],
+.slide[data-layout="section"],
+.slide[data-layout="quote"],
+.slide[data-layout="summary"] { justify-content: center; }
+
+.slide[data-layout="title"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(26, 54, 93, 0.14) 1px, transparent 1.6px);
+  background-size: 22px 22px;
+  background-size: 2cqi 2cqi;
+  -webkit-mask-image: linear-gradient(to left, #000 4%, transparent 62%);
+  mask-image: linear-gradient(to left, #000 4%, transparent 62%);
+  pointer-events: none;
+}
+
+.title-stack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  gap: 1.9cqi;
+  max-width: 78%;
+}
+
+.slide[data-layout="title"] .slide-title {
+  font-size: 54px;
+  font-size: 5.8cqi;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  gap: 2.6cqi;
+  margin-top: 14px;
+  margin-top: 1.4cqi;
+}
+
+.meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  gap: 0.9cqi;
+  font-size: 13px;
+  font-size: 1.4cqi;
+  color: var(--color-text-secondary);
+}
+
+.meta span::before {
+  content: "";
+  width: 8px;
+  width: 0.8cqi;
+  height: 8px;
+  height: 0.8cqi;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+.chapter-num {
+  position: absolute;
+  right: 2cqi;
+  bottom: -7cqi;
+  z-index: 0;
+  font-family: var(--font-title);
+  font-size: 34cqi;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-primary);
+  opacity: 0.05;
+  user-select: none;
+  pointer-events: none;
+}
+
+.points {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  gap: 2.3cqi;
+  counter-reset: pt;
+}
+
+.points li {
+  counter-increment: pt;
+  position: relative;
+  padding-left: 52px;
+  padding-left: 4.8cqi;
+  font-size: 20px;
+  font-size: 2cqi;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+.points li::before {
+  content: counter(pt, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  font-family: var(--font-code);
+  font-size: 15px;
+  font-size: 1.5cqi;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.points li strong { color: var(--color-primary); }
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4cqi;
+  flex: 1;
+  align-items: center;
+}
+
+.image-text {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 4cqi;
+  flex: 1;
+  align-items: center;
+}
+
+.figure {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface);
+  border: 1px solid rgba(26, 54, 93, 0.10);
+  border-radius: var(--radius);
+}
+
+.figure svg { width: 72%; height: auto; }
+
+.slide[data-layout="full-visual"] { padding: 0; }
+
+.slide[data-layout="full-visual"] .figure {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+}
+
+.slide[data-layout="full-visual"] figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 6cqi 5cqi 2.4cqi;
+  font-size: 14px;
+  font-size: 1.4cqi;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(26, 32, 44, 0.78));
+}
+
+.quote-mark {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 10cqi;
+  line-height: 0.6;
+  color: var(--color-accent);
+}
+
+.slide blockquote {
+  max-width: 82%;
+  font-size: 28px;
+  font-size: 3cqi;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-primary);
+}
+
+.slide blockquote cite {
+  display: block;
+  margin-top: 22px;
+  margin-top: 2.2cqi;
+  font-size: 15px;
+  font-size: 1.5cqi;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.code-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-code);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.code-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  gap: 0.9cqi;
+  padding: 14px 24px;
+  padding: 1.4cqi 2.4cqi;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.code-head .dot { width: 11px; width: 1.1cqi; height: 11px; height: 1.1cqi; border-radius: 50%; }
+.dot-r { background: #fc5f57; }
+.dot-y { background: #fdbc2e; }
+.dot-g { background: #29c73f; }
+
+.code-head .lang {
+  margin-left: auto;
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-size: 1.2cqi;
+  letter-spacing: 0.18em;
+  color: #a0aec0;
+}
+
+.code-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 26px 30px;
+  padding: 2.6cqi 3cqi;
+  font-family: var(--font-code);
+  font-size: 15px;
+  font-size: 1.6cqi;
+  line-height: 1.9;
+  color: #e2e8f0;
+}
+
+.code-line {
+  display: block;
+  white-space: pre;
+  overflow: hidden;
+  max-width: 0;
+}
+
+.slide.active .code-line {
+  animation: typewriter 0.8s steps(30, end) var(--d, 0s) forwards;
+}
+
+.tk-kw { color: #f6ad55; }
+.tk-str { color: #9ae6b4; }
+.tk-fn { color: #90cdf4; }
+.tk-num { color: #fbd38d; }
+.tk-cm { color: #718096; font-style: italic; }
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3cqi;
+  flex: 1;
+  align-items: stretch;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  gap: 1.7cqi;
+  padding: 28px;
+  padding: 2.8cqi;
+  background: var(--color-surface);
+  border-top: 7px solid var(--color-secondary);
+  border-top-width: 0.7cqi;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.pane-alt { border-top-color: var(--color-accent); }
+
+.pane h3 {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-size: 2.2cqi;
+  color: var(--color-primary);
+}
+
+.pane ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  gap: 1.1cqi;
+}
+
+.pane li {
+  position: relative;
+  padding-left: 20px;
+  padding-left: 2cqi;
+  font-size: 17px;
+  font-size: 1.7cqi;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.pane li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.slide.active .pane-a { animation: slide-left 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide.active .pane-b { animation: slide-right 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  gap: 2.2cqi;
+}
+
+.checklist li {
+  position: relative;
+  padding-left: 48px;
+  padding-left: 4.6cqi;
+  font-size: 20px;
+  font-size: 2cqi;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.checklist li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0.08em;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  width: 2.7cqi;
+  height: 28px;
+  height: 2.7cqi;
+  font-size: 15px;
+  font-size: 1.5cqi;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-accent);
+  border-radius: 50%;
+}
+
+.next-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  gap: 1.2cqi;
+  margin-top: 40px;
+  margin-top: 4cqi;
+  padding: 13px 24px;
+  padding: 1.3cqi 2.4cqi;
+  font-size: 16px;
+  font-size: 1.6cqi;
+  font-weight: 600;
+  color: var(--color-secondary);
+  background: var(--color-surface);
+  border: 1px solid rgba(26, 54, 93, 0.14);
+  border-left: 6px solid var(--color-accent);
+  border-left-width: 0.6cqi;
+  border-radius: var(--radius);
+}
+
+.slide [data-anim] { opacity: 0; }
+
+.slide.active [data-anim] {
+  animation-name: fade;
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+
+.slide.active [data-anim="slide-up"] { animation-name: slide-up; }
+.slide.active [data-anim="slide-left"] { animation-name: slide-left; }
+.slide.active [data-anim="slide-right"] { animation-name: slide-right; }
+.slide.active [data-anim="scale"] { animation-name: scale; }
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes slide-up { from { opacity: 0; transform: translateY(1.4em); } }
+@keyframes slide-left { from { opacity: 0; transform: translateX(-2.2em); } }
+@keyframes slide-right { from { opacity: 0; transform: translateX(2.2em); } }
+@keyframes scale { from { opacity: 0; transform: scale(0.9); } }
+@keyframes typewriter { from { max-width: 0; } to { max-width: 100%; } }
+
+.no-js .slide {
+  position: static;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.no-js .slide [data-anim],
+.no-js .code-line { opacity: 1; max-width: 100%; }
+
+.progress {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+  width: 100%;
+  height: 4px;
+  background: rgba(26, 54, 93, 0.12);
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-accent));
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pager {
+  position: fixed;
+  right: 18px;
+  bottom: 16px;
+  z-index: 20;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid rgba(26, 54, 93, 0.14);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.hint {
+  position: fixed;
+  left: 18px;
+  bottom: 16px;
+  z-index: 20;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  animation: hint-out 0.6s ease 5s forwards;
+}
+
+@keyframes hint-out { to { opacity: 0; visibility: hidden; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide [data-anim], .code-line, .pane-a, .pane-b {
+    animation: none !important;
+    transition: none !important;
+  }
+  .slide [data-anim] { opacity: 1; }
+  .code-line { max-width: 100%; }
+}
+
+@media print {
+  @page { size: landscape; margin: 0; }
+
+  body {
+    display: block;
+    overflow: visible;
+    background: #fff;
+  }
+
+  .deck {
+    width: 100%;
+    aspect-ratio: auto;
+    container-type: normal;
+  }
+
+  .slide {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .slide [data-anim] { opacity: 1 !important; animation: none !important; }
+  .code-line { max-width: 100% !important; animation: none !important; }
+  .pane-a, .pane-b { animation: none !important; }
+
+  .progress, .pager, .hint { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <section class="slide" data-layout="title">
+    <div class="chapter-num" data-anim="scale" style="--d: 0.15s">03</div>
+    <div class="title-stack">
+      <div class="rule" data-anim="slide-left"></div>
+      <p class="kicker" data-anim="fade" style="--d: 0.05s">计算机网络 · Computer Networks</p>
+      <h1 class="slide-title" data-anim="scale" style="--d: 0.12s">第三章 传输层协议</h1>
+      <p class="subtitle" data-anim="fade" style="--d: 0.3s">从进程到进程：端到端通信的核心机制</p>
+      <div class="meta" data-anim="fade" style="--d: 0.45s">
+        <span>授课时长 90 分钟</span>
+        <span>3 个知识点</span>
+        <span>认知层级：理解 → 应用</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-layout="content">
+    <header class="slide-head">
+      <p class="kicker" data-anim="fade">知识点 3.1 · 可靠传输</p>
+      <h1 class="slide-title" data-anim="slide-up" style="--d: 0.08s">TCP 三次握手</h1>
+      <div class="rule" data-anim="slide-left" style="--d: 0.16s"></div>
+    </header>
+    <div class="slide-body">
+      <ul class="points">
+        <li data-anim="slide-up" style="--d: 0.24s"><strong>SYN</strong>：客户端发送 SYN 报文，进入 SYN_SENT 状态</li>
+        <li data-anim="slide-up" style="--d: 0.36s"><strong>SYN + ACK</strong>：服务器回应确认报文，进入 SYN_RCVD 状态</li>
+        <li data-anim="slide-up" style="--d: 0.48s"><strong>ACK</strong>：客户端再次确认，双方进入 ESTABLISHED 状态</li>
+        <li data-anim="slide-up" style="--d: 0.6s">为什么是三次：防止已失效的连接请求突然到达服务器</li>
+      </ul>
+      <p class="caption" data-anim="fade" style="--d: 0.78s">重点：每次握手都携带序号与确认号，双方借此同步初始序列号</p>
+    </div>
+  </section>
+
+  <section class="slide" data-layout="summary">
+    <header class="slide-head">
+      <p class="kicker" data-anim="fade">本章小结 · Summary</p>
+      <h1 class="slide-title" data-anim="fade" style="--d: 0.08s">本章要点回顾</h1>
+    </header>
+    <div class="slide-body">
+      <ul class="checklist">
+        <li data-anim="fade" style="--d: 0.2s">传输层为应用进程提供端到端的逻辑通信</li>
+        <li data-anim="fade" style="--d: 0.34s">TCP 通过三次握手建立连接、四次挥手释放连接</li>
+        <li data-anim="fade" style="--d: 0.48s">可靠传输依赖序号、确认应答与超时重传机制</li>
+      </ul>
+      <p class="next-note" data-anim="fade" style="--d: 0.66s">接下来进入交互演示 →</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress"><span></span></div>
+<div class="pager" aria-live="polite">1 / 3</div>
+<div class="hint">← → 翻页 · F 全屏 · 数字 + Enter 跳转</div>
+
+<script>
+(function () {
+  var deck = document.querySelector('.deck');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var fill = document.querySelector('.progress span');
+  var pager = document.querySelector('.pager');
+  var total = slides.length;
+  var current = 0;
+  var jumpBuffer = '';
+  var jumpTimer = null;
+
+  function render() {
+    for (var i = 0; i < total; i++) {
+      slides[i].classList.toggle('active', i === current);
+      slides[i].classList.toggle('before', i < current);
+    }
+    fill.style.width = ((current + 1) / total * 100) + '%';
+    pager.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function go(index) {
+    current = Math.max(0, Math.min(total - 1, index));
+    render();
+  }
+
+  function next() { go(current + 1); }
+  function prev() { go(current - 1); }
+
+  function clearJump() {
+    jumpBuffer = '';
+    clearTimeout(jumpTimer);
+    jumpTimer = null;
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key >= '0' && e.key <= '9') {
+      jumpBuffer += e.key;
+      pager.textContent = '跳转 ' + jumpBuffer;
+      clearTimeout(jumpTimer);
+      jumpTimer = setTimeout(function () { clearJump(); render(); }, 1500);
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowRight':
+      case ' ':
+      case 'PageDown':
+        e.preventDefault();
+        clearJump();
+        next();
+        break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault();
+        clearJump();
+        prev();
+        break;
+      case 'Home':
+        e.preventDefault();
+        go(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        go(total - 1);
+        break;
+      case 'Enter':
+        if (jumpBuffer) {
+          go(parseInt(jumpBuffer, 10) - 1);
+          clearJump();
+        }
+        break;
+      case 'f':
+      case 'F':
+        toggleFullscreen();
+        break;
+      case 'Escape':
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        break;
+    }
+  });
+
+  var touchX = 0;
+  var touchY = 0;
+
+  deck.addEventListener('touchstart', function (e) {
+    touchX = e.changedTouches[0].clientX;
+    touchY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  deck.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - touchX;
+    var dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) { next(); } else { prev(); }
+    }
+  }, { passive: true });
+
+  render();
+})();
+</script>
+</body>
+</html>

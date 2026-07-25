@@ -1,0 +1,312 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "teaching-blueprint/v1",
+  "title": "Course",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "id",
+    "title",
+    "subtitle",
+    "subject",
+    "targetAudience",
+    "teachingPhilosophy",
+    "totalDuration",
+    "chapters"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "teaching-blueprint/v1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "type": "string"
+    },
+    "targetAudience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "description", "prerequisites"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "advanced"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "teachingPhilosophy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taxonomy", "approach"],
+      "properties": {
+        "taxonomy": {
+          "type": "string",
+          "enum": ["bloom", "solo", "custom"]
+        },
+        "approach": {
+          "type": "string"
+        }
+      }
+    },
+    "totalDuration": {
+      "type": "string"
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Chapter"
+      }
+    }
+  },
+  "definitions": {
+    "ResourceForm": {
+      "type": "string",
+      "enum": [
+        "slide",
+        "diagram",
+        "timeline",
+        "animation",
+        "flowchart",
+        "simulator",
+        "canvas-demo",
+        "svg-visualization",
+        "3d-model",
+        "code-playground",
+        "comparison-table",
+        "mind-map"
+      ]
+    },
+    "ResourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "form",
+        "title",
+        "description",
+        "priority",
+        "spec"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["ppt", "interactive"]
+        },
+        "form": {
+          "$ref": "#/definitions/ResourceForm"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["required", "optional"]
+        },
+        "spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "interactionType",
+            "visualElements",
+            "dataRequirements",
+            "estimatedComplexity"
+          ],
+          "properties": {
+            "interactionType": {
+              "type": ["string", "null"]
+            },
+            "visualElements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dataRequirements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "estimatedComplexity": {
+              "type": "string",
+              "enum": ["low", "medium", "high"]
+            }
+          }
+        }
+      }
+    },
+    "KnowledgePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "order",
+        "duration",
+        "cognitiveLevel",
+        "teachingObjectives",
+        "keyPoints",
+        "difficultPoints",
+        "knowledgeType",
+        "strategy",
+        "resources",
+        "dependencies",
+        "tags"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "cognitiveLevel": {
+          "type": "string",
+          "enum": [
+            "remember",
+            "understand",
+            "apply",
+            "analyze",
+            "evaluate",
+            "create"
+          ]
+        },
+        "teachingObjectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keyPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "difficultPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "knowledgeType": {
+          "type": "string",
+          "enum": [
+            "concept",
+            "process",
+            "principle",
+            "procedure",
+            "relationship",
+            "fact"
+          ]
+        },
+        "strategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["primaryForm", "reasoning", "alternativeForms"],
+          "properties": {
+            "primaryForm": {
+              "$ref": "#/definitions/ResourceForm"
+            },
+            "reasoning": {
+              "type": "string"
+            },
+            "alternativeForms": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResourceForm"
+              }
+            }
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResourceRef"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Chapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "order",
+        "duration",
+        "learningObjectives",
+        "knowledgePoints"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "learningObjectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "knowledgePoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/KnowledgePoint"
+          }
+        }
+      }
+    }
+  }
+}

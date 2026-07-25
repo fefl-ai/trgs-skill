@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交互组件标题</title>
+  <style>
+    /* === Theme Variables === */
+    :root {
+      --color-primary: #0e7490;
+      --color-secondary: #155e75;
+      --color-accent: #f59e0b;
+      --color-bg: #f2f5f4;
+      --color-surface: #ffffff;
+      --color-text: #16302f;
+      --color-text-secondary: #5c6f6d;
+
+      --font-display: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
+      --font-body: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --shadow-card: 0 2px 12px rgba(22, 48, 47, 0.08);
+      --transition-fast: 160ms ease;
+    }
+
+    /* === Reset === */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    button, input, output { font: inherit; }
+
+    :focus-visible {
+      outline: 3px solid rgba(245, 158, 11, 0.65);
+      outline-offset: 2px;
+    }
+
+    /* === Layout === */
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      background-image:
+        radial-gradient(circle at 12% 15%, rgba(14, 116, 144, 0.10), transparent 42%),
+        radial-gradient(circle at 88% 85%, rgba(245, 158, 11, 0.10), transparent 46%),
+        repeating-linear-gradient(0deg, transparent 0 23px, rgba(14, 116, 144, 0.05) 23px 24px),
+        repeating-linear-gradient(90deg, transparent 0 23px, rgba(14, 116, 144, 0.05) 23px 24px);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas:
+        "header  header"
+        "stage   control"
+        "footer  footer";
+      gap: 18px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* === Header === */
+    .interactive-header {
+      grid-area: header;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      border-left: 5px solid var(--color-primary);
+      padding-left: 16px;
+    }
+
+    .interactive-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      letter-spacing: 0.02em;
+      line-height: 1.25;
+    }
+
+    .objective {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* === Stage === */
+    .interactive-stage {
+      grid-area: stage;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      padding: 20px;
+      min-height: 380px;
+      overflow: hidden;
+    }
+
+    .stage-placeholder {
+      height: 100%;
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      border: 2px dashed rgba(14, 116, 144, 0.35);
+      border-radius: var(--radius-md);
+      color: var(--color-text-secondary);
+      animation: breathe 2.6s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { border-color: rgba(14, 116, 144, 0.25); }
+      50% { border-color: rgba(14, 116, 144, 0.6); }
+    }
+
+    /* === Control Panel === */
+    .control-panel {
+      grid-area: control;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-self: start;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      cursor: pointer;
+      background: var(--color-primary);
+      color: #fff;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--color-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--color-primary);
+      border: 1.5px solid var(--color-primary);
+    }
+
+    .btn--ghost:hover:not(:disabled) {
+      background: rgba(14, 116, 144, 0.08);
+      box-shadow: none;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d3dedd;
+      transition: transform var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .step-dot.active {
+      background: var(--color-accent);
+      transform: scale(1.3);
+    }
+
+    .slider-field {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .slider-field input[type="range"] {
+      width: 100%;
+      accent-color: var(--color-accent);
+      cursor: pointer;
+    }
+
+    .slider-field output {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-text);
+      min-width: 3ch;
+      text-align: right;
+    }
+
+    /* === Info Panel === */
+    .info-panel {
+      grid-area: footer;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      padding: 12px 18px;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      margin-right: 8px;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
+      50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    }
+
+    /* === Responsive === */
+    @media (max-width: 900px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+          "header"
+          "stage"
+          "control"
+          "footer";
+        padding: 16px;
+      }
+
+      .control-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .btn-group { flex: 1 1 100%; }
+      .slider-field { flex: 1 1 100%; }
+      .btn--ghost { flex: 1 1 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 标题区 -->
+  <header class="interactive-header">
+    <h1>交互组件标题（知识点名称）</h1>
+    <p class="objective">教学目标：用一句话概括本组件要帮助学生理解的核心内容</p>
+  </header>
+
+  <!-- 主交互区 -->
+  <main class="interactive-stage" id="stage" aria-label="主交互区">
+    <div class="stage-placeholder">
+      <p>主交互区占位：根据 form 在此放置 Canvas / SVG / DOM 元素</p>
+    </div>
+  </main>
+
+  <!-- 控制面板 -->
+  <aside class="control-panel" aria-label="控制面板">
+    <div class="btn-group">
+      <button class="btn" id="btn-prev" type="button">上一步</button>
+      <button class="btn" id="btn-next" type="button">下一步</button>
+    </div>
+
+    <div class="step-indicator" id="step-indicator" aria-hidden="true">
+      <span class="step-dot active"></span>
+      <span class="step-dot"></span>
+      <span class="step-dot"></span>
+    </div>
+
+    <label class="slider-field">
+      <span>参数调节</span>
+      <input type="range" id="param-speed" min="0" max="100" value="50">
+      <output id="param-speed-value" for="param-speed">50</output>
+    </label>
+
+    <button class="btn btn--ghost" id="btn-reset" type="button">重置</button>
+  </aside>
+
+  <!-- 信息/反馈区 -->
+  <footer class="info-panel">
+    <p class="status">
+      <span class="status-dot" aria-hidden="true"></span>当前状态：<span id="status-text">已就绪，等待操作</span>
+    </p>
+    <p class="hint" id="hint-text">操作提示：点击"下一步"开始演示</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* === State Management === */
+      function createInitialState() {
+        return {
+          currentStep: 0,
+          totalSteps: 3,
+          isPlaying: false,
+          params: { speed: 50 }
+        };
+      }
+
+      var state = createInitialState();
+
+      /* === DOM Cache === */
+      var els = {};
+
+      function cacheDOM() {
+        els.stage = document.getElementById('stage');
+        els.btnPrev = document.getElementById('btn-prev');
+        els.btnNext = document.getElementById('btn-next');
+        els.btnReset = document.getElementById('btn-reset');
+        els.stepIndicator = document.getElementById('step-indicator');
+        els.paramSpeed = document.getElementById('param-speed');
+        els.paramSpeedValue = document.getElementById('param-speed-value');
+        els.statusText = document.getElementById('status-text');
+        els.hintText = document.getElementById('hint-text');
+      }
+
+      /* === Rendering === */
+      function render() {
+        var dots = els.stepIndicator.querySelectorAll('.step-dot');
+        for (var i = 0; i < dots.length; i++) {
+          dots[i].classList.toggle('active', i === state.currentStep);
+        }
+        els.btnPrev.disabled = state.currentStep === 0;
+        els.btnNext.disabled = state.currentStep === state.totalSteps - 1;
+        els.paramSpeedValue.textContent = state.params.speed;
+        els.statusText.textContent = '第 ' + (state.currentStep + 1) + ' 步 / 共 ' + state.totalSteps + ' 步';
+      }
+
+      /* === Interaction Handlers === */
+      function bindEvents() {
+        els.btnPrev.addEventListener('click', function () {
+          state.currentStep = Math.max(0, state.currentStep - 1);
+          render();
+        });
+
+        els.btnNext.addEventListener('click', function () {
+          state.currentStep = Math.min(state.totalSteps - 1, state.currentStep + 1);
+          render();
+        });
+
+        els.btnReset.addEventListener('click', reset);
+
+        els.paramSpeed.addEventListener('input', function (event) {
+          state.params.speed = Number(event.target.value);
+          render();
+        });
+      }
+
+      /* === Reset === */
+      function reset() {
+        state = createInitialState();
+        els.paramSpeed.value = state.params.speed;
+        els.hintText.textContent = '操作提示：点击"下一步"开始演示';
+        render();
+      }
+
+      /* === Animation Loop (按需启用) ===
+      var rafId = null;
+
+      function loop(timestamp) {
+        render();
+        rafId = requestAnimationFrame(loop);
+      }
+
+      function startLoop() {
+        if (rafId === null) rafId = requestAnimationFrame(loop);
+      }
+
+      function stopLoop() {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }
+      */
+
+      /* === Initialization === */
+      function init() {
+        cacheDOM();
+        bindEvents();
+        render();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
