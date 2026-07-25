@@ -87,7 +87,8 @@ skill/
 │   └── self-repair.md           ← 代码诊断与自修复 Prompt
 ├── templates/
 │   ├── ppt-base.html            ← PPT HTML 骨架模板
-│   └── interactive-base.html    ← 交互组件 HTML 骨架模板
+│   ├── interactive-base.html    ← 交互组件 HTML 骨架模板
+│   └── portal-base.html         ← 课程导航大厅 Portal 模板
 ├── rules/
 │   └── generation-rules.md      ← 技术约束 + 降级策略
 └── examples/

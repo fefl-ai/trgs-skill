@@ -35,6 +35,9 @@ Layer 3: Pedagogical QA（教学检查）
 
 ## Layer 1: Technical QA（16 项检查）
 
+> 💡 **提示**：可直接运行自动化校验工具执行硬性检测：
+> `node scripts/qa-checker.js <file-path> [--type=ppt|interactive]`
+
 ### 1.1 HTML 结构检查
 
 | 编号 | 检查项 | 规则 | 严重度 |

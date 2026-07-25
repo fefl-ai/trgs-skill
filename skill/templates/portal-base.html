@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="ocean">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程资源大厅 · Teaching Resource Portal</title>
+  <style>
+    /* === Multi-Theme Variables === */
+    :root, [data-theme="ocean"] {
+      --color-primary: #1a365d;
+      --color-secondary: #2c5282;
+      --color-accent: #ed8936;
+      --color-bg: #ffffff;
+      --color-surface: #f7fafc;
+      --color-text: #1a202c;
+      --color-text-secondary: #4a5568;
+      --radius-card: 12px;
+      --shadow-card: 0 4px 14px rgba(26, 54, 93, 0.08);
+      --font-body: system-ui, -apple-system, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --color-primary: #38bdf8;
+      --color-secondary: #818cf8;
+      --color-accent: #f59e0b;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-text-secondary: #94a3b8;
+      --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="academic"] {
+      --color-primary: #7c1d1d;
+      --color-secondary: #1e3a8a;
+      --color-accent: #d97706;
+      --color-bg: #fdfbf7;
+      --color-surface: #ffffff;
+      --color-text: #292524;
+      --color-text-secondary: #57534e;
+      --shadow-card: 0 4px 14px rgba(41, 37, 36, 0.08);
+    }
+
+    [data-theme="botanical"] {
+      --color-primary: #14532d;
+      --color-secondary: #047857;
+      --color-accent: #d97706;
+      --color-bg: #f6fbf7;
+      --color-surface: #ffffff;
+      --color-text: #14231a;
+      --color-text-secondary: #4b6354;
+      --shadow-card: 0 4px 14px rgba(20, 35, 26, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* === Header === */
+    header.hero {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--color-accent);
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    h1.course-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    p.course-subtitle {
+      font-size: 1.2rem;
+      color: var(--color-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .meta-bar {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--color-text-secondary);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* === Theme Switcher === */
+    .theme-switcher {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-btn {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      border: 1px solid var(--color-secondary);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    /* === Chapter Grid === */
+    .chapters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.8rem;
+    }
+
+    .chapter-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 1.8rem;
+      border-top: 5px solid var(--color-primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .chapter-num {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .chapter-title {
+      font-size: 1.4rem;
+      color: var(--color-primary);
+      margin-bottom: 1rem;
+    }
+
+    .resource-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .resource-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 8px;
+    }
+
+    .resource-type {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .type-ppt { background: var(--color-secondary); }
+    .type-interactive { background: var(--color-accent); }
+
+    .resource-link {
+      color: var(--color-primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .resource-link:hover {
+      text-decoration: underline;
+    }
+
+    /* === Footer === */
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 主题切换 -->
+  <div class="theme-switcher">
+    <button class="theme-btn" onclick="setTheme('ocean')">🌊 海蓝</button>
+    <button class="theme-btn" onclick="setTheme('dark')">🌙 暗黑</button>
+    <button class="theme-btn" onclick="setTheme('academic')">📜 学术</button>
+    <button class="theme-btn" onclick="setTheme('botanical')">🌿 自然</button>
+  </div>
+
+  <!-- Header -->
+  <header class="hero">
+    <span class="badge">TRGS Generated Portal</span>
+    <h1 class="course-title" id="course-title">计算机网络 · 课程教学大厅</h1>
+    <p class="course-subtitle" id="course-subtitle">从物理层到应用层：全栈网络协议架构解析</p>
+    <div class="meta-bar">
+      <div class="meta-item">⏱ 课程总时长: <strong id="total-duration">16 课时</strong></div>
+      <div class="meta-item">🎯 目标受众: <strong id="target-audience">大二计算机专业学生</strong></div>
+      <div class="meta-item">📚 学科领域: <strong id="subject">计算机科学与技术</strong></div>
+    </div>
+  </header>
+
+  <!-- 章节网格 -->
+  <main class="chapters-grid" id="chapters-grid">
+    
+    <!-- 章节卡片示例 1 -->
+    <article class="chapter-card">
+      <div>
+        <div class="chapter-num">Chapter 01</div>
+        <h2 class="chapter-title">第一章 传输层协议与 TCP 机制</h2>
+        <p style="font-size:0.9rem; color:var(--color-text-secondary);">包含 3 个核心知识点：端到端通信、TCP 三次握手与滑动窗口流量控制。</p>
+      </div>
+
+      <ul class="resource-list">
+        <li class="resource-item">
+          <div>
+            <span class="resource-type type-ppt">PPT</span>
+            <a class="resource-link" href="./chapter-01/slides.html" target="_blank">第一章 教学课件</a>
+          </div>
+          <span style="font-size:0.8rem; color:var(--color-text-secondary);">slides.html</span>
+        </li>
+        <li class="resource-item">
+          <div>
+            <span class="resource-type type-interactive">Interactive</span>
+            <a class="resource-link" href="./chapter-01/interactive-tcp-handshake.html" target="_blank">TCP 三次握手互动演练</a>
+          </div>
+          <span style="font-size:0.8rem; color:var(--color-text-secondary);">interactive.html</span>
+        </li>
+      </ul>
+    </article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>Generated by <strong>TRGS — Teaching Resource Generation Skill</strong> | Single-file Zero-dependency HTML5</p>
+  </footer>
+
+</div>
+
+<script>
+  function setTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+  }
+</script>
+
+</body>
+</html>
