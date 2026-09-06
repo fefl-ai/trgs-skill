@@ -18,7 +18,7 @@
     "serve": "node bin/trgs.js serve",
     "pack": "node bin/trgs.js pack",
     "preview": "node bin/trgs.js preview",
-    "pack:skill": "rm -f TRGS-Skill-v1.zip && zip -r TRGS-Skill-v1.zip skill/ scripts/ bin/ spec/ README.md package.json -x \"*.DS_Store\" -x \"skill/examples/*/dist/*\""
+    "pack:skill": "rm -f TRGS-Skill-v1.zip dist/trgs-skill.zip && zip -r TRGS-Skill-v1.zip skill/ scripts/ bin/ spec/ README.md package.json -x \"*.DS_Store\" -x \"skill/examples/*/dist/*\" && mkdir -p dist && cd skill && zip -r ../dist/trgs-skill.zip . -x \"*.DS_Store\" -x \"examples/*/dist/*\" && cd .."
   },
   "keywords": [
     "trgs",

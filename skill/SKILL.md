@@ -1,3 +1,8 @@
+---
+name: trgs
+description: Teaching Resource Generation Skill (TRGS) - 根据教学大纲全自动构建教学蓝图(Blueprint)、离线响应式幻灯片(Slides)、六维高互动动效演练器与聚合学习门户。支持质量门禁质检与一键离线发布。
+---
+
 # TRGS — Teaching Resource Generation Skill
 
 ## 触发条件

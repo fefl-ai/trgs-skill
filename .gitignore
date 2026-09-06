@@ -5,3 +5,4 @@ test-output/
 
 *.trgs-cache.json
 node_modules/
+dist/
