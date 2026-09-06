@@ -17,7 +17,8 @@
     "clean:cache": "node bin/trgs.js clean-cache",
     "serve": "node bin/trgs.js serve",
     "pack": "node bin/trgs.js pack",
-    "preview": "node bin/trgs.js preview"
+    "preview": "node bin/trgs.js preview",
+    "pack:skill": "rm -f TRGS-Skill-v1.zip && zip -r TRGS-Skill-v1.zip skill/ scripts/ bin/ spec/ README.md package.json -x \"*.DS_Store\" -x \"skill/examples/*/dist/*\""
   },
   "keywords": [
     "trgs",

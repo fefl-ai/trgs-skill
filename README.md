@@ -274,6 +274,34 @@ node bin/trgs.js pack dist/ -o courseware-dist.zip
 
 ---
 
+
+---
+
+## 📦 技能发布与归档规范 (Skill Packaging Rules)
+
+为保证分发给 Agent / 用户时的纯净度，Skill 自身打包归档使用如下标准化规则：
+
+### 1. 包含目录与文件白名单 (Whitelist)
+- `skill/`：技能核心（提示词 prompts、校验规范 schemas、离线模板 templates、约束规则 rules、示例 examples）
+- `scripts/`：构建流水线引擎与质检工具（`trgs-build.js`、`qa-checker.js`）
+- `bin/`：CLI 统一执行入口（`bin/trgs.js`）
+- `spec/`：技术架构与交互矩阵规范（`00-overview.md` ~ `07-interactive-patterns.md`）
+- `README.md`、`package.json`
+
+### 2. 严格排除黑名单 (Blacklist / Exclusions)
+- `.git/`、`.gitignore`、`.DS_Store`
+- `.trae/` 等本地 IDE 配置与临时缓存
+- `research/` 等前期开发调研草稿
+- `test-output/` 及各类示例项目的构建生成目录（如 `skill/examples/*/dist/*`）
+- `node_modules/` 及各类运行时缓存文件（`*.trgs-cache.json`）
+
+### 3. 一键打包命令
+```bash
+npm run pack:skill
+# 底层等效于：
+# zip -r TRGS-Skill-v1.zip skill/ scripts/ bin/ spec/ README.md package.json -x "*.DS_Store" -x "skill/examples/*/dist/*"
+```
+
 ## 📄 开源协议
 
 本项目基于 [MIT License](./LICENSE) 开源许可。欢迎提交 Issue 与 Pull Request 共同丰富教学组件与 Prompt 策略！
