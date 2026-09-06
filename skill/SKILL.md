@@ -54,14 +54,19 @@ Step 3: 策略决策（prompts/strategy-engine.md）
   └→ 为每个知识点决定最佳教学形式
 
 Step 4: 资源生成（并行）
-  ├→ PPT Generator（prompts/ppt-generator.md + templates/ppt-base.html）
-  └→ Interactive Generator（prompts/interactive-generator.md + templates/interactive-base.html）
+  ├→ PPT Generator（prompts/ppt-generator.md + templates/ppt-base.html，含离线代码高亮与交互联动）
+  └→ Interactive Generator（prompts/interactive-generator.md + templates/interactive-base.html，含 9 大交互模式矩阵与诊断评价）
 
 Step 5: 质量检查（prompts/quality-checker.md + rules/generation-rules.md）
   └→ 三层检查：Technical → Functional → Pedagogical
 
-Step 6: 交付
-  └→ 输出所有通过 QA 的文件
+Step 6: 门户装配与批量构建编排 (scripts/trgs-build.js / bin/trgs.js)
+  ├→ 自动生成全课程资源导航门户 index.html
+  ├→ 内容寻址哈希缓存与增量构建
+  └→ 异构模型路由调度 (balanced / cost-effective / premium)
+
+Step 7: 交付
+  └→ 输出所有通过 QA 与校验的完整教学套件
 ```
 
 ## 核心原则

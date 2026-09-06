@@ -3,3 +3,5 @@ test-output/
 .DS_Store
 .trae/
 
+*.trgs-cache.json
+node_modules/

@@ -213,6 +213,57 @@ TRGS 生成的交付产物可以直接双击运行：
 
 ---
 
+## 🧩 方案 2 升级：六维交互模式矩阵与认知支架
+
+TRGS 将交互课件从传统线性演示升级为多维教学法矩阵（详见 [spec/07-interactive-patterns.md](spec/07-interactive-patterns.md) 与 [spec/04-interactive-generator.md](spec/04-interactive-generator.md)）：
+
+1. **多变量参数探索沙盒（Parameter Sandbox）**：状态驱动引擎支持实时滑块、步进器与多维输出（图表/公式/拓扑）响应式联动。
+2. **即时诊断与形成性测评（Diagnostic Assessment）**：单选/多选/拖拽分类题目，支持即时得分、解析与认知纠偏。
+3. **双视角对比 Diff（Dual-view Diff）**：双指针、双算法（如递归 vs 迭代）、网络协议状态机同步对照。
+4. **离线轻量代码高亮与交互嵌入**：零依赖内建纯 CSS/JS 正则语法高亮引擎，可在幻灯片与课件中无缝运行。
+
+---
+
+## 🛠️ 工程化 CLI 与批量构建 (Batch Build CLI)
+
+TRGS 内置原生 Node.js 零外部依赖的自动化构建编排工具 `trgs`：
+
+```bash
+# 1. 任务规划预览 (查看模型路由分派与构建任务列表)
+node bin/trgs.js plan skill/examples/cs-networking/blueprint.json
+
+# 2. 增量构建 (自动计算 SHA-256 缓存，未变更模块秒级跳过)
+node bin/trgs.js build skill/examples/cs-networking/blueprint.json --incremental
+
+# 3. 指定异构模型路由策略 (balanced / cost-effective / premium)
+node bin/trgs.js build my-blueprint.json --model-profile=cost-effective
+
+# 4. 自动装配生成聚合门户主页 index.html
+node bin/trgs.js portal skill/examples/cs-networking/blueprint.json -o dist/
+
+# 5. 批量或单文件自动化技术质检 (Layer 1 QA)
+node bin/trgs.js qa dist/
+node scripts/qa-checker.js dist/slides.html --type=ppt
+
+# 6. 一键本地启动产物服务并自动打开浏览器查看 (零依赖静态 HTTP 服务器)
+node bin/trgs.js serve dist/ --port 3000 --open
+
+# 7. 一键生成标准离线 ZIP 归档包 (纯 Node 原生，支持在任何机器脱机解压分发)
+node bin/trgs.js pack dist/ -o courseware-dist.zip
+```
+
+### 异构模型路由 (Heterogeneous Model Routing)
+
+| 阶段/任务 | 复杂度 | balanced 策略 (默认) | cost-effective 策略 | premium 策略 |
+|---|---|---|---|---|
+| **Blueprint 大纲解析** | 结构化逻辑 | Claude 3.5 Haiku / GPT-4o-mini | Gemini 2.0 Flash / GPT-4o-mini | Claude 3.5 Sonnet / o3-mini |
+| **PPT 幻灯片课件** | 标准代码/排版 | Claude 3.5 Sonnet / GPT-4o | Gemini 2.0 Flash / DeepSeek-V3 | Claude 3.5 Sonnet |
+| **交互组件 (复杂算法/Canvas)** | 前沿代码/复杂数学 | Claude 3.7 Sonnet / o3-mini-high | Claude 3.5 Sonnet / DeepSeek-R1 | Claude 3.7 Sonnet (Thought) / o1 |
+| **门户 Index 装配** | 结构渲染 | 确定性引擎 (0 Token) | 确定性引擎 (0 Token) | 确定性引擎 (0 Token) |
+| **技术规范与 AST 质检** | 规则扫描 | 本地 Node.js 校验引擎 (0 Token) | 本地 Node.js 校验引擎 (0 Token) | 本地 Node.js 校验引擎 (0 Token) |
+
+---
+
 ## ⚙️ 设计规范与约束
 
 所有由 TRGS 生成的资源必须严格遵守 [generation-rules.md](file:///Users/fengliang/code/trgs-skill/skill/rules/generation-rules.md)：

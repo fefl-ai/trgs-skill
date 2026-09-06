@@ -1,0 +1,35 @@
+{
+  "name": "trgs-skill",
+  "version": "1.0.0",
+  "description": "Teaching Resource Generation System (TRGS) - Automated Knowledge Blueprint & Interactive Courseware Generator",
+  "main": "scripts/trgs-build.js",
+  "bin": {
+    "trgs": "./bin/trgs.js",
+    "trgs-build": "./bin/trgs.js",
+    "trgs-qa": "./scripts/qa-checker.js"
+  },
+  "scripts": {
+    "build": "node bin/trgs.js build",
+    "plan": "node bin/trgs.js plan",
+    "portal": "node bin/trgs.js portal",
+    "qa": "node scripts/qa-checker.js",
+    "qa:all": "node bin/trgs.js qa",
+    "clean:cache": "node bin/trgs.js clean-cache",
+    "serve": "node bin/trgs.js serve",
+    "pack": "node bin/trgs.js pack",
+    "preview": "node bin/trgs.js preview"
+  },
+  "keywords": [
+    "trgs",
+    "courseware",
+    "slides",
+    "interactive-learning",
+    "blueprint",
+    "teaching-resource"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -59,6 +59,8 @@ PPT Gen    Interactive Gen    (未来扩展)
 | ③ | [03-ppt-generator.md](./03-ppt-generator.md) | 定义 HTML PPT 的生成规范 |
 | ④ | [04-interactive-generator.md](./04-interactive-generator.md) | 定义交互网页的生成机制 |
 | ⑤ | [05-quality-checker.md](./05-quality-checker.md) | 定义生成后的质量保障 |
+| ⑥ | [06-build-orchestrator.md](./06-build-orchestrator.md) | 定义构建编排器、异构模型路由与 CLI 规范 |
+| ⑦ | [07-interactive-patterns.md](./07-interactive-patterns.md) | 定义多维交互模式矩阵、教学法扩展与离线代码高亮规范 |
 
 ### 技术形态
 
