@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="ocean">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCP 三次握手与状态转换交互演练</title>
+  <style>
+    :root, [data-theme="ocean"] {
+      --color-primary: #0e7490;
+      --color-secondary: #155e75;
+      --color-accent: #f59e0b;
+      --color-bg: #f2f5f4;
+      --color-surface: #ffffff;
+      --color-text: #16302f;
+      --color-text-secondary: #5c6f6d;
+      --color-border: #cbd5e1;
+      --color-success: #10b981;
+      --color-client: #0284c7;
+      --color-server: #0d9488;
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --shadow-card: 0 4px 16px rgba(14, 116, 144, 0.08);
+      --transition: 200ms ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 340px;
+      grid-template-areas:
+        "header header"
+        "stage sidebar"
+        "footer footer";
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      grid-area: header;
+      padding: 12px 24px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { font-size: 1.15rem; color: var(--color-primary); font-weight: 700; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(14, 116, 144, 0.1);
+      color: var(--color-primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Main Stage */
+    .stage {
+      grid-area: stage;
+      position: relative;
+      background: #f8fafc;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .canvas-container {
+      width: 100%;
+      max-width: 760px;
+      height: 480px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Sidebar Controls */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--color-surface);
+      border-left: 1px solid var(--color-border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .panel-block {
+      background: #f8fafc;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn--primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .btn--primary:hover:not(:disabled) {
+      background: var(--color-secondary);
+    }
+    .btn--outline {
+      background: #fff;
+      border-color: var(--color-border);
+      color: var(--color-text);
+    }
+    .btn--outline:hover:not(:disabled) {
+      background: #f1f5f9;
+    }
+    .btn--reset {
+      grid-column: span 2;
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .btn--reset:hover {
+      background: #fecaca;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .step-indicators {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .step-dot {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #cbd5e1;
+      transition: var(--transition);
+    }
+    .step-dot.active {
+      background: var(--color-primary);
+    }
+    .step-dot.completed {
+      background: var(--color-success);
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+    .slider-row {
+      display: flex;
+      justify-content: space-between;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--color-primary);
+    }
+
+    /* Packet Details Box */
+    .packet-spec {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.8rem;
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      line-height: 1.4;
+      min-height: 84px;
+    }
+
+    /* Footer */
+    footer {
+      grid-area: footer;
+      padding: 10px 24px;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .state-badge {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    .explain-text {
+      color: var(--color-text-secondary);
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TCP 三次握手与状态转换交互演练</h1>
+    <span class="badge">TRGS v1.0 经典生成模式 (Before)</span>
+  </header>
+
+  <main class="stage">
+    <div class="canvas-container" id="canvas-wrapper">
+      <canvas id="stageCanvas"></canvas>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="panel-block">
+      <div class="panel-title">握手时序控制</div>
+      <div class="step-controls">
+        <button class="btn btn--outline" id="btnPrev" disabled>上一步</button>
+        <button class="btn btn--primary" id="btnNext">下一步</button>
+        <button class="btn btn--reset" id="btnReset">重置演练状态</button>
+      </div>
+      <div class="step-indicators" id="stepDots">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">网络延迟模拟 (RTT)</div>
+      <div class="slider-group">
+        <div class="slider-row">
+          <span>报文单向飞行时间</span>
+          <span id="speedVal">1.2s</span>
+        </div>
+        <input type="range" id="speedSlider" min="500" max="3000" step="100" value="1200">
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">当前传输报文首部 (Packet Header)</div>
+      <div class="packet-spec" id="packetSpec">
+        等待握手启动...<br>客户端状态: CLOSED<br>服务端状态: LISTEN
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">教学难点解析</div>
+      <p style="font-size: 0.8rem; line-height: 1.45; color: var(--color-text-secondary);">
+        <strong>为什么不能是两次握手？</strong><br>
+        若只有两次握手，已失效的旧连接请求若迟到抵达服务端，服务端单方面分配资源建立连接，而客户端不会确认，造成服务端资源长期空耗。
+      </p>
+    </div>
+  </aside>
+
+  <footer>
+    <div>当前阶段：<span class="state-badge" id="currentPhaseLabel">阶段 0: 准备就绪</span></div>
+    <div class="explain-text" id="statusHint">操作提示：点击“下一步”发送第一个 SYN 报文</div>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // 阶段定义
+      var steps = [
+        {
+          phase: "阶段 0: 准备就绪",
+          clientState: "CLOSED",
+          serverState: "LISTEN",
+          packet: "无传输报文",
+          desc: "服务端正处于 LISTEN 监听端口，客户端准备建立新连接。",
+          packetAnim: null
+        },
+        {
+          phase: "阶段 1: SYN 发送 (第 1 次握手)",
+          clientState: "SYN-SENT",
+          serverState: "LISTEN",
+          packet: "SYN=1, ACK=0, seq=x(100)",
+          desc: "客户端发送连接请求报文 SYN，进入 SYN-SENT 状态，同时初始化自身序列号 seq=100。",
+          packetAnim: { dir: "c2s", label: "SYN=1, seq=100" }
+        },
+        {
+          phase: "阶段 2: SYN+ACK 发送 (第 2 次握手)",
+          clientState: "SYN-SENT",
+          serverState: "SYN-RCVD",
+          packet: "SYN=1, ACK=1, seq=y(300), ack=x+1(101)",
+          desc: "服务端收到 SYN，分配连接资源，回复 SYN+ACK 并确认客户端序列号，进入 SYN-RCVD。",
+          packetAnim: { dir: "s2c", label: "SYN=1, ACK=1, seq=300, ack=101" }
+        },
+        {
+          phase: "阶段 3: ACK 确认 (第 3 次握手完成)",
+          clientState: "ESTABLISHED",
+          serverState: "ESTABLISHED",
+          packet: "ACK=1, seq=x+1(101), ack=y+1(301)",
+          desc: "客户端收到确认，双方均进入 ESTABLISHED 状态，全双工可靠信道正式建立，可传输数据。",
+          packetAnim: { dir: "c2s", label: "ACK=1, seq=101, ack=301" }
+        }
+      ];
+
+      var currentStep = 0;
+      var duration = 1200;
+      var animProgress = 1; // 0 ~ 1
+      var animStartTime = 0;
+      var rafId = null;
+
+      var canvas = document.getElementById('stageCanvas');
+      var ctx = canvas.getContext('2d');
+      var wrapper = document.getElementById('canvas-wrapper');
+
+      var btnPrev = document.getElementById('btnPrev');
+      var btnNext = document.getElementById('btnNext');
+      var btnReset = document.getElementById('btnReset');
+      var speedSlider = document.getElementById('speedSlider');
+      var speedVal = document.getElementById('speedVal');
+      var packetSpec = document.getElementById('packetSpec');
+      var currentPhaseLabel = document.getElementById('currentPhaseLabel');
+      var statusHint = document.getElementById('statusHint');
+      var stepDots = document.getElementById('stepDots').children;
+
+      // 调整画布物理分辨率
+      function resize() {
+        var w = wrapper.clientWidth;
+        var h = wrapper.clientHeight;
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.scale(dpr, dpr);
+        draw();
+      }
+
+      window.addEventListener('resize', resize);
+
+      // 绘制主画面
+      function draw() {
+        var w = wrapper.clientWidth;
+        var h = wrapper.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+
+        var cur = steps[currentStep];
+        var clientX = 140;
+        var serverX = w - 140;
+
+        // 1. 绘制主机实体
+        // Client
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.roundRect(clientX - 60, 40, 120, 50, 8);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Client (客户端)', clientX, 65);
+        ctx.font = '12px monospace';
+        ctx.fillText('IP: 192.168.1.5', clientX, 82);
+
+        // Server
+        ctx.fillStyle = '#0d9488';
+        ctx.beginPath();
+        ctx.roundRect(serverX - 60, 40, 120, 50, 8);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText('Server (服务端)', serverX, 65);
+        ctx.font = '12px monospace';
+        ctx.fillText('Port: 80/443', serverX, 82);
+
+        // 2. 绘制时间轴虚线
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+
+        ctx.beginPath();
+        ctx.moveTo(clientX, 95);
+        ctx.lineTo(clientX, h - 50);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(serverX, 95);
+        ctx.lineTo(serverX, h - 50);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 3. 绘制主机当前状态气泡
+        drawStateBubble(clientX, 130, cur.clientState, '#0284c7');
+        drawStateBubble(serverX, 130, cur.serverState, '#0d9488');
+
+        // 4. 绘制已完成步骤的参考斜线
+        var stepY = [160, 240, 320];
+        for (var i = 1; i <= 3; i++) {
+          if (currentStep >= i) {
+            var yStart = stepY[i-1];
+            var yEnd = yStart + 60;
+            var fromX = (i % 2 === 1) ? clientX : serverX;
+            var toX = (i % 2 === 1) ? serverX : clientX;
+
+            ctx.strokeStyle = (i === currentStep) ? '#f59e0b' : '#cbd5e1';
+            ctx.lineWidth = (i === currentStep) ? 3 : 1.5;
+            ctx.beginPath();
+            ctx.moveTo(fromX, yStart);
+            ctx.lineTo(toX, yEnd);
+            ctx.stroke();
+
+            // 标注报文类型
+            var midX = (fromX + toX) / 2;
+            var midY = (yStart + yEnd) / 2 - 8;
+            ctx.fillStyle = (i === currentStep) ? '#d97706' : '#64748b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            var txt = (i === 1) ? "SYN" : (i === 2) ? "SYN + ACK" : "ACK";
+            ctx.fillText(txt, midX, midY);
+
+            // 如果是当前步且在动画中，绘制动态飞行的飞包
+            if (i === currentStep && cur.packetAnim) {
+              var p = Math.min(1, Math.max(0, animProgress));
+              var curX = fromX + (toX - fromX) * p;
+              var curY = yStart + (yEnd - yStart) * p;
+
+              // 飞包圆点
+              ctx.fillStyle = '#f59e0b';
+              ctx.shadowColor = 'rgba(245, 158, 11, 0.5)';
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(curX, curY, 8, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.shadowBlur = 0;
+
+              // 飞包标签
+              ctx.fillStyle = '#1e293b';
+              ctx.font = 'bold 11px monospace';
+              ctx.fillText(cur.packetAnim.label, curX, curY - 14);
+            }
+          }
+        }
+      }
+
+      function drawStateBubble(x, y, stateText, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(x - 55, y, 110, 26, 13);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(stateText, x, y + 17);
+      }
+
+      function updateUI() {
+        var cur = steps[currentStep];
+        currentPhaseLabel.textContent = cur.phase;
+        statusHint.textContent = cur.desc;
+
+        packetSpec.innerHTML = 
+          '<strong>[' + cur.phase + ']</strong><br>' +
+          '首部参数: ' + cur.packet + '<br>' +
+          '客户端状态: ' + cur.clientState + ' | 服务端状态: ' + cur.serverState;
+
+        btnPrev.disabled = currentStep === 0;
+        btnNext.disabled = currentStep === steps.length - 1;
+
+        for (var i = 0; i < stepDots.length; i++) {
+          stepDots[i].className = 'step-dot';
+          if (i === currentStep) stepDots[i].classList.add('active');
+          if (i < currentStep) stepDots[i].classList.add('completed');
+        }
+      }
+
+      function startAnimation() {
+        if (currentStep === 0) {
+          animProgress = 1;
+          draw();
+          return;
+        }
+        animProgress = 0;
+        animStartTime = performance.now();
+
+        if (rafId) cancelAnimationFrame(rafId);
+
+        function tick(now) {
+          var elapsed = now - animStartTime;
+          animProgress = elapsed / duration;
+          if (animProgress > 1) {
+            animProgress = 1;
+            draw();
+          } else {
+            draw();
+            rafId = requestAnimationFrame(tick);
+          }
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      // 事件绑定
+      btnNext.addEventListener('click', function() {
+        if (currentStep < steps.length - 1) {
+          currentStep++;
+          updateUI();
+          startAnimation();
+        }
+      });
+
+      btnPrev.addEventListener('click', function() {
+        if (currentStep > 0) {
+          currentStep--;
+          updateUI();
+          startAnimation();
+        }
+      });
+
+      btnReset.addEventListener('click', function() {
+        currentStep = 0;
+        updateUI();
+        startAnimation();
+      });
+
+      speedSlider.addEventListener('input', function(e) {
+        duration = parseInt(e.target.value, 10);
+        speedVal.textContent = (duration / 1000).toFixed(1) + 's';
+      });
+
+      // 初始化
+      resize();
+      updateUI();
+    })();
+  </script>
+</body>
+</html>

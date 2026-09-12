@@ -1,313 +1,137 @@
 <div align="center">
 
-# 🎓 TRGS — Teaching Resource Generation Skill
+# 🚀 Interactive Deck Engine (TRGS)
 
-**下一代 AI 驱动的端到端教学资源生成 Skill**
+### 下一代智能交互课件与高沉浸教学演练引擎
 
-*将冗长复杂的教学大纲，一键转化为美观、高互动、零依赖的 Web 课件与互动教学网页*
+**告别枯燥翻页 PPT！一键将教学大纲转化为「可玩、可调、可探究」的离线全栈交互课件**
 
-[特性](#-核心特性) • [架构](#-系统架构) • [视觉主题](#-内置视觉主题) • [自动化工具](#-自动化校验工具) • [快速开始](#-快速开始) • [输出示例](#-输出样例展示) • [设计规范](#-设计规范与约束)
+[![SkillHub](https://img.shields.io/badge/SkillHub-获取最新技能包-ff6b6b?style=for-the-badge&logo=rocket)](https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Zero Dependency](https://img.shields.io/badge/Runtime-Zero%20Dependency-emerald?style=for-the-badge)](package.json)
+[![Agent Ready](https://img.shields.io/badge/Agent-TRAE%20%7C%20Cursor%20%7C%20OpenClaw%20%7C%20Codex-8A2BE2?style=for-the-badge)](#)
 
----
+<br />
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Agent](https://img.shields.io/badge/Agent-TRAE%20%7C%20Cursor%20%7C%20OpenClaw-8A2BE2.svg)
-![Output](https://img.shields.io/badge/Output-Single--file%20HTML5-success.svg)
-![Tooling](https://img.shields.io/badge/Node.js%20Tooling-Zero%20Dependency-brightgreen.svg)
+[🎯 核心亮点](#-为什么需要-interactive-deck-engine) •
+[🧩 四大工业级积木](#-4-大内置工业级交互状态机积木-interactive-blocks) •
+[⚡ 快速体验](#-极速上手指南) •
+[🛠️ 构建与质检](#-构建工具与质量门禁) •
+[🌐 访问技能市场](https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine)
 
 </div>
 
 ---
 
-## 📖 简介
+> 💡 **技能市场现已上架**：你可以在 SkillHub 市场一键安装使用本技能！<br>
+> 🔗 **官方安装入口**：[https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine](https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine)
 
-**TRGS (Teaching Resource Generation Skill)** 是一个高度结构化的 AI Agent 扩展能力库（Skill），专为 LLM / AI Coding Assistant（如 TRAE, Cursor, OpenClaw, Gemini Agent 等）设计。
+---
 
-不同于普通的 PPT 文本生成器，TRGS 基于**教学法理论（Pedagogical Framework）**与**两阶段分离架构**，先通过策略引擎决策“怎么教”，再将大纲精确编译为**单文件、双击即用、零外部依赖**的 HTML5 响应式 PPT 和真正可交互的教学小网页。
+## 🌟 为什么需要 Interactive Deck Engine？
+
+市面上传统的 AI 生成 PPT 工具，往往停留在**“帮你在卡片里塞字和换背景”**，学生仍然只是走马观花。
+
+**Interactive Deck Engine (TRGS)** 彻底颠覆这一现状：
+1. **从“文字阅读”跨越到“动手探索”**：基于布鲁姆认知分级（Bloom\x27s Taxonomy），将抽象难点直接编译为动态仿真沙盒、时序演进器或磁吸连线试验台。
+2. **工业级状态机积木（Interactive Blocks）**：杜绝 AI 从零手写 Canvas/JS 时的漂移失控与内存泄漏，将动作演进带入单文件原生前端。
+3. **单文件·零构建·断网秒开**：交付的是完整的单文件 HTML5，无需安装几十个 npm 依赖，无需启动复杂后端，U 盘、机房、手机浏览器双击即用！
+
+---
+
+## 🧩 4 大内置工业级交互状态机积木 (Interactive Blocks)
+
+借鉴成熟动作引擎哲学，本引擎在 `skill/templates/interactive-blocks/` 封装了 4 套标准化防御性状态机，赋能 Agent 极速生成工业级教学体验：
+
+| 积木架构 (Block Archetype) | 核心驱动特性 | 典型教学场景 |
+| :--- | :--- | :--- |
+| ⏱️ **Timeline & Action Runner**<br>`timeline-runner.html` | • 离散时序状态机 + 自动连续播放 / 暂停 / 单步前进<br>• ResizeObserver 高 DPI Canvas 自适应防模糊<br>• 报文/数据帧实时探针卡片 | 网络三次握手/四次挥手、算法单步执行、业务流转、生化演变 |
+| 🎛️ **Parameter Sandbox Engine**<br>`parameter-sandbox.html` | • 双向绑定滑块（带防抖与归一化）<br>• 响应式重绘总线 (Reactive Draw Bus)<br>• 实时遥测读数 (Telemetry) 监控 | 物理抛体/碰撞规律、三角波/傅里叶调制、TCP 滑动窗口与拥塞控制、经济供需曲线 |
+| 🧲 **Drag & Snap Matcher**<br>`drag-snap-matcher.html` | • 逆矩阵坐标反查（彻底消除屏幕缩放鼠标漂移）<br>• 槽位重力磁吸判定场 (Snap Radius)<br>• 实时装配正确性判分与复位反馈 | 报文首部拼装、拓扑网络组网、电路逻辑门搭建、化学分子组装 |
+| 🕸️ **Graph & State Inspector**<br>`graph-state-inspector.html` | • 拓扑图谱脉冲高亮与激活状态流转<br>• 节点悬停/点击下钻深度检查<br>• 状态转移事件触发器 (State Triggers) 与死锁防御 | TCP 有限状态机(FSM)转移、路由算法、树/图遍历、微服务拓扑 |
 
 ---
 
 ## ✨ 核心特性
 
-- 🎯 **Blueprint-First 架构与极简大纲智能扩写**
-  - 单一数据源原则。大纲首先被解析并编译为符合 JSON Schema 规范的 `blueprint.json`。内置 **Syllabus Enrichment Mode**，即使输入仅为一句话（如“生成 Python 面向对象课件”），也能智能推断并自动扩写为标准的 90 分钟教学蓝图。
-- 💡 **Strategy-Engine 决策驱动**
-  - 在生成前，AI 策略引擎先根据知识点的**认知层级（Bloom 认知分类）**与**抽象程度**，智能决定最佳呈现形式（如控制台模拟器、流程步进、参数调优、对比卡片等）。
-- 🎨 **Multi-Theme 多主题视觉系统与通用 UI 组件库**
-  - 内置 `ocean` (通用海蓝)、`dark` (极客暗黑)、`academic` (学术典雅)、`botanical` (清新自然) 4 套现代设计主题，且模板内置分步节点 (`.step-flow`) 与左右对比栏 (`.compare-split`)。
-- 🏛️ **Course Portal 课程导航大厅**
-  - 提供 `portal-base.html` 模板，自动将一次批量生成的所有章节 PPT (`slides.html`) 与交互网页 (`interactive-*.html`) 汇聚在优雅的 `index.html` Portal 导航主页中。
-- 🛠️ **自动化 QA 校验与外科手术式自修复 (Self-Repair Engine)**
-  - 提供零依赖 Node.js 校验脚本 `scripts/qa-checker.js` 执行硬性代码检测。若未通过 QA 检查，自动调起 `self-repair.md` 进行带错局部精准修正。
+* **🎯 Blueprint-First 蓝图严密性**：大纲先被解析为标准 JSON Schema 蓝图。支持 **Syllabus Enrichment Mode**，即使输入只有一句话（“教我量子力学”），也能智能推演出完整的教学难点与策略。
+* **💡 教学策略引擎 (Strategy Engine)**：根据知识点的深度（记忆、理解、应用、分析、评估、创造），自动匹配讲义表达还是交互式组件。
+* **🎨 4 套大师级预设视觉主题**：内置 `ocean`（通用科技蓝）、`dark`（极客深黑）、`academic`（典雅学术）、`botanical`（清新自然），适配多学科场景。
+* **🏛️ 聚合学习门户 (Course Portal)**：一键将所有章节课件 (`slides.html`) 与多个实验 (`interactive-*.html`) 汇聚在唯美沉浸的 `index.html` Portal 大厅中。
+* **🛡️ 质量门禁与自愈回环 (QA & Self-Repair)**：提供零依赖 Node.js 校验脚本 `scripts/qa-checker.js`。如代码有隐蔽语法或排版错误，自动调起局部自愈修正。
 
 ---
 
-## 🏛 系统架构
+## ⚡ 极速上手指南
 
-TRGS 的端到端流水线包含 6 个标准阶段：
+### 方式一：在 Agent 平台直接安装（推荐）
 
-```
-                    ┌────────────────────────┐
-                    │    教学大纲 / 课程需求   │
-                    └───────────┬────────────┘
-                                │
-                                ▼
-                    ┌────────────────────────┐
-                    │   Blueprint Builder    │  ◄── 支持极简大纲智能扩写 (Enrichment Mode)
-                    └───────────┬────────────┘
-                                │
-                                ▼
-                     Teaching Blueprint JSON
-                                │
-                                ▼
-                    ┌────────────────────────┐
-                    │    Strategy Engine     │  ◄── 匹配教学法与决策最佳形式
-                    └───────────┬────────────┘
-                                │
-                 ┌──────────────┴──────────────┐
-                 ▼                             ▼
-    ┌────────────────────────┐   ┌────────────────────────┐
-    │     PPT Generator      │   │ Interactive Generator  │  ◄── 并行生成单文件 HTML
-    └────────────┬───────────┘   └─────────────┬──────────┘
-                 │                             │
-                 └──────────────┬──────────────┘
-                                │
-                                ▼
-                    ┌────────────────────────┐
-                    │    Quality Checker     │  ◄── 支持 node scripts/qa-checker.js
-                    └───────────┬────────────┘
-                                │
-                     ┌──────────┴──────────┐
-                FAIL │                     │ PASS
-                     ▼                     ▼
-          ┌────────────────────┐   ┌─────────────────────────┐
-          │ Self-Repair Engine │   │  交付文件 + Portal 主页 │
-          │ (self-repair.md)   │   │      (index.html)       │
-          └────────────────────┘   └─────────────────────────┘
+访问 **[SkillHub 技能主页](https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine)**，一键同步到你的 AI 助手（TRAE、Cursor、OpenClaw、Codex 等），直接在对话框发起生成：
+
+```text
+"@Interactive-Deck-Engine 请为我制作一堂关于《计算机网络 TCP 协议》的高互动公开课，要求包含三次握手时序演练"
 ```
 
----
+### 方式二：本地极速构建运行
 
-## 🎨 内置视觉主题
-
-TRGS 针对不同学科和场景设计了 4 套现代风格的 CSS Token 主题系统：
-
-| 主题标识 | 名称 | 设计风格与特点 | 推荐适用学科 |
-| :--- | :--- | :--- | :--- |
-| `ocean` | **通用海蓝** *(默认)* | 经典深蓝与暖橙渐变，高视觉对比与现代感 | 计算机网络、通识课程、科技讲座 |
-| `dark` | **极客暗黑** | 深灰背景配以霓虹青与亮金，符合现代 IDE 审美 | 软件开发、算法数据结构、操作系统 |
-| `academic` | **学术典雅** | 暖象牙白背景配以藏青与深红，沉稳大气 | 论文汇报、高等数学、大学物理、人文历史 |
-| `botanical` | **清新自然** | 森林绿与鼠尾草绿，舒缓优雅 | 生物学、环境科学、地理与自然科学 |
-
-在生成的 HTML 根节点通过 `<html data-theme="dark">` 即可无缝切换主题。
-
----
-
-## 🛠 自动化校验工具
-
-项目内置零依赖原生 Node.js 代码校验脚本 `scripts/qa-checker.js`，可独立在终端中运行，自动对生成的 HTML 进行 AST 语法检查、违禁 API 检测与文件体积核查：
+本项目内置全套零外部 npm 依赖的 Node.js 编排工具，下载即可运行：
 
 ```bash
-# 校验交互组件 HTML
-node scripts/qa-checker.js test-output/chapter-01/interactive-tcp-handshake.html
-
-# 校验 Web PPT HTML
-node scripts/qa-checker.js test-output/chapter-01/slides.html --type=ppt
-```
-
-**JSON QA Report 输出示例：**
-```json
-{
-  "resourceId": "interactive-tcp-handshake",
-  "result": "PASS",
-  "layer": "technical",
-  "fileSizeKB": "33.27KB",
-  "checks": [
-    { "id": "T1", "name": "DOCTYPE 声明", "passed": true, "detail": "存在 <!DOCTYPE html>" },
-    { "id": "T4", "name": "无外部资源引用", "passed": true, "detail": "无外部 HTTP/HTTPS 资源引用" },
-    { "id": "T5", "name": "无禁止 API", "passed": true, "detail": "未检测到违禁 API" },
-    { "id": "T7", "name": "JS 语法正确", "passed": true, "detail": "所有内联 JavaScript 语法解析成功" }
-  ]
-}
-```
-
----
-
-## 📁 项目目录结构
-
-```
-trgs-skill/
-├── scripts/
-│   └── qa-checker.js            # 🛠️ 零依赖原生 Node.js 技术 QA 校验脚本
-├── skill/                      # 🧠 Agent Skill 实施主目录
-│   ├── SKILL.md                # Skill 主入口规则与工作流定义
-│   ├── schemas/
-│   │   └── blueprint-schema.json # Blueprint 数据结构 JSON Schema (支持 theme)
-│   ├── prompts/                # 🤖 6 大核心 Prompt 引擎
-│   │   ├── blueprint-builder.md     # 1. 大纲 → 结构化蓝图 (含智能扩写)
-│   │   ├── strategy-engine.md       # 2. 知识点 → 教学形式策略
-│   │   ├── ppt-generator.md         # 3. 蓝图 → Web PPT 生成
-│   │   ├── interactive-generator.md # 4. 蓝图 → 可交互网页生成
-│   │   ├── quality-checker.md       # 5. 三层 QA 质量检验
-│   │   └── self-repair.md           # 6. 带错局部自修复 Engine Prompt
-│   ├── templates/              # 🎨 核心 HTML 骨架模板
-│   │   ├── ppt-base.html            # PPT 基础模板 (含全屏/翻页/多主题)
-│   │   ├── interactive-base.html    # 交互组件模板 (含控制面板/UI 组件)
-│   │   └── portal-base.html         # 课程导航大厅 Portal 模板
-│   ├── rules/
-│   │   └── generation-rules.md      # 技术约束、复杂度上限与降级规则
-│   └── examples/               # 📚 官方标杆范例
-│       └── cs-networking/           # 计算机网络大纲蓝图范例 (包含标准 blueprint.json)
-├── spec/                       # 📋 详细系统设计规范文档 (00-05)
-└── README.md                   # 📖 本说明文档
-```
-
----
-
-## 🚀 快速开始
-
-### 1. 安装与引入
-
-#### 方式 A：在 Agent 环境中直接引入文件夹
-将 `skill/` 目录拷贝到你的 AI Agent 插件或 Skill 路径中（如 `.gemini/skills/` 或 Agent 配置目录）：
-
-```bash
-git clone https://github.com/fefl-ai/trgs-skill.git
-```
-
----
-
-### 2. 触发关键词
-
-在兼容的 AI Agent（TRAE / Cursor / OpenClaw / Gemini Agent 等）对话框中输入以下关键词即可自动触发 Skill：
-
-- *"根据这份教学大纲生成 PPT 课件"*
-- *"帮我制作一个关于 TCP 三次握手的交互式教学网页"*
-- *"生成第三章的教学资源与备课教案"*
-
----
-
-### 3. Prompt 调用示例
-
-**示例 Prompt：**
-> “请读取下面的《计算机网络》第三章大纲，选择 `dark` 暗黑主题，生成完整的 Web PPT 和一个 TCP 三次握手的交互演示网页：”
-> ```markdown
-> 第三章 传输层协议
-> 3.1 传输层服务与协议概述
-> 3.2 端口与套接字概念
-> 3.3 TCP 三次握手与连接建立过程（重点、难点）
-> ```
-
----
-
-## 📊 输出样例展示
-
-TRGS 生成的交付产物可以直接双击运行：
-
-1. **课程 Portal 大厅 (`index.html`)**
-   - 包含课程元数据与完整章节目录，一键跳转各章节 PPT 与交互演练。
-2. **Web PPT (`slides.html`)**
-   - 16:9 响应式比例，支持 `←` `→` 键翻页、`F` 全屏切换、数字跳转及打印模式。
-3. **交互式演示网页 (`interactive-*.html`)**
-   - 带有控制面板、分步动画演算、参数调节滑块与重置路径，帮助学生在实操中化解难点。
-
----
-
-## 🧩 方案 2 升级：六维交互模式矩阵与认知支架
-
-TRGS 将交互课件从传统线性演示升级为多维教学法矩阵（详见 [spec/07-interactive-patterns.md](spec/07-interactive-patterns.md) 与 [spec/04-interactive-generator.md](spec/04-interactive-generator.md)）：
-
-1. **多变量参数探索沙盒（Parameter Sandbox）**：状态驱动引擎支持实时滑块、步进器与多维输出（图表/公式/拓扑）响应式联动。
-2. **即时诊断与形成性测评（Diagnostic Assessment）**：单选/多选/拖拽分类题目，支持即时得分、解析与认知纠偏。
-3. **双视角对比 Diff（Dual-view Diff）**：双指针、双算法（如递归 vs 迭代）、网络协议状态机同步对照。
-4. **离线轻量代码高亮与交互嵌入**：零依赖内建纯 CSS/JS 正则语法高亮引擎，可在幻灯片与课件中无缝运行。
-
----
-
-## 🛠️ 工程化 CLI 与批量构建 (Batch Build CLI)
-
-TRGS 内置原生 Node.js 零外部依赖的自动化构建编排工具 `trgs`：
-
-```bash
-# 1. 任务规划预览 (查看模型路由分派与构建任务列表)
+# 1. 查看或制定构建计划 (Dry-Run)
 node bin/trgs.js plan skill/examples/cs-networking/blueprint.json
 
-# 2. 增量构建 (自动计算 SHA-256 缓存，未变更模块秒级跳过)
-node bin/trgs.js build skill/examples/cs-networking/blueprint.json --incremental
+# 2. 本地启动服务并实时预览
+node bin/trgs.js preview skill/examples/cs-networking/blueprint.json
 
-# 3. 指定异构模型路由策略 (balanced / cost-effective / premium)
-node bin/trgs.js build my-blueprint.json --model-profile=cost-effective
-
-# 4. 自动装配生成聚合门户主页 index.html
-node bin/trgs.js portal skill/examples/cs-networking/blueprint.json -o dist/
-
-# 5. 批量或单文件自动化技术质检 (Layer 1 QA)
-node bin/trgs.js qa dist/
-node scripts/qa-checker.js dist/slides.html --type=ppt
-
-# 6. 一键本地启动产物服务并自动打开浏览器查看 (零依赖静态 HTTP 服务器)
-node bin/trgs.js serve dist/ --port 3000 --open
-
-# 7. 一键生成标准离线 ZIP 归档包 (纯 Node 原生，支持在任何机器脱机解压分发)
-node bin/trgs.js pack dist/ -o courseware-dist.zip
+# 3. 一键执行硬性质量门禁检测
+npm run qa:all
 ```
 
-### 异构模型路由 (Heterogeneous Model Routing)
-
-| 阶段/任务 | 复杂度 | balanced 策略 (默认) | cost-effective 策略 | premium 策略 |
-|---|---|---|---|---|
-| **Blueprint 大纲解析** | 结构化逻辑 | Claude 3.5 Haiku / GPT-4o-mini | Gemini 2.0 Flash / GPT-4o-mini | Claude 3.5 Sonnet / o3-mini |
-| **PPT 幻灯片课件** | 标准代码/排版 | Claude 3.5 Sonnet / GPT-4o | Gemini 2.0 Flash / DeepSeek-V3 | Claude 3.5 Sonnet |
-| **交互组件 (复杂算法/Canvas)** | 前沿代码/复杂数学 | Claude 3.7 Sonnet / o3-mini-high | Claude 3.5 Sonnet / DeepSeek-R1 | Claude 3.7 Sonnet (Thought) / o1 |
-| **门户 Index 装配** | 结构渲染 | 确定性引擎 (0 Token) | 确定性引擎 (0 Token) | 确定性引擎 (0 Token) |
-| **技术规范与 AST 质检** | 规则扫描 | 本地 Node.js 校验引擎 (0 Token) | 本地 Node.js 校验引擎 (0 Token) | 本地 Node.js 校验引擎 (0 Token) |
-
 ---
 
-## ⚙️ 设计规范与约束
+## 🛠️ 构建工具与质量门禁
 
-所有由 TRGS 生成的资源必须严格遵守 [generation-rules.md](file:///Users/fengliang/code/trgs-skill/skill/rules/generation-rules.md)：
+TRGS 内置完善的纯原生工具链，不需安装庞杂的构建套件即可保障产物高可用：
 
-- ❌ **禁止**：使用任何外部 CDN/网络图片、`eval()`、`localStorage`、`fetch()` 网络请求及外部前端框架（React/Vue/jQuery 等）。
-- ✅ **允许**：使用 Canvas 2D API、SVG 矢量渲染、CSS Animation/Flexbox/Grid、`requestAnimationFrame`。
-- 📦 **体积要求**：PPT 文件 < 500KB，Interactive 组件 < 200KB。
-
----
-
-
----
-
-## 📦 技能发布与归档规范 (Skill Packaging Rules)
-
-为保证分发给 Agent / 用户时的纯净度，Skill 自身打包归档使用如下标准化规则：
-
-### 1. 包含目录与文件白名单 (Whitelist)
-- `skill/`：技能核心（提示词 prompts、校验规范 schemas、离线模板 templates、约束规则 rules、示例 examples）
-- `scripts/`：构建流水线引擎与质检工具（`trgs-build.js`、`qa-checker.js`）
-- `bin/`：CLI 统一执行入口（`bin/trgs.js`）
-- `spec/`：技术架构与交互矩阵规范（`00-overview.md` ~ `07-interactive-patterns.md`）
-- `README.md`、`package.json`
-
-### 2. 严格排除黑名单 (Blacklist / Exclusions)
-- `.git/`、`.gitignore`、`.DS_Store`
-- `.trae/` 等本地 IDE 配置与临时缓存
-- `research/` 等前期开发调研草稿
-- `test-output/` 及各类示例项目的构建生成目录（如 `skill/examples/*/dist/*`）
-- `node_modules/` 及各类运行时缓存文件（`*.trgs-cache.json`）
-
-### 3. 一键打包命令
 ```bash
+# 校验单个生成的交互网页是否符合技术约束与安全规范
+node scripts/qa-checker.js benchmark-comparison/after/interactive-res-3-2-interactive.html --type=interactive
+
+# 一键打包整个发布版本 Skill 压缩包
 npm run pack:skill
-# 底层等效于：
-# zip -r TRGS-Skill-v1.zip skill/ scripts/ bin/ spec/ README.md package.json -x "*.DS_Store" -x "skill/examples/*/dist/*"
 ```
 
-## 📄 开源协议
+---
 
-本项目基于 [MIT License](./LICENSE) 开源许可。欢迎提交 Issue 与 Pull Request 共同丰富教学组件与 Prompt 策略！
+## 📂 仓库目录全景
 
-<div align="center">
+```text
+trgs-skill/
+├── skill/                         # 核心 Agent 技能包
+│   ├── SKILL.md                   # 技能主入口与路由状态机
+│   ├── templates/                 # 模板骨架库
+│   │   ├── ppt-base.html          # 响应式课件基础模板
+│   │   ├── portal-base.html       # 课程导航大厅模板
+│   │   └── interactive-blocks/    # 4 大工业级状态机积木
+│   │       ├── timeline-runner.html
+│   │       ├── parameter-sandbox.html
+│   │       ├── drag-snap-matcher.html
+│   │       └── graph-state-inspector.html
+│   ├── prompts/                   # 教学策略引擎与代码生成 Prompts
+│   └── schemas/                   # Blueprint 严格规范 JSON Schema
+├── scripts/                       # 自动化构建与代码质检管线 (Zero-dependency)
+│   ├── qa-checker.js              # 质量门禁静态与安全检测
+│   └── trgs-build.js              # 任务流水线构建执行器
+└── benchmark-comparison/          # 演进前后质感对比基准样本
+    ├── before/                    # 演进前自由生成形态
+    └── after/                     # 演进后状态机积木形态
+```
 
-**Made with ❤️ for Modern Educators & AI Agents**
+---
 
-</div>
+## 🤝 贡献与生态
+
+欢迎提交 Issue 与 Pull Request！如果你沉淀了针对特定学科（如微积分、天体物理、乐理）的优秀状态机积木，欢迎向我们贡献。
+
+* **技能主页**: [https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine](https://skillhub.cn/skills/user_f823e2d9/interactive-deck-engine)
+* **开源许可**: [MIT License](LICENSE)

@@ -1,0 +1,435 @@
+<!--
+  TRGS Interactive Block Archetype A: Timeline & Action Runner (离散时序与状态机演进器)
+  适用场景: 网络握手协议、算法单步执行、生产线/业务流转等。
+  内置能力:
+    - 离散状态机 (State Machine) 与时序步骤总线
+    - 自动播放 / 暂停 / 单步前进 / 单步后退 / 极速重置
+    - 动画插值时间轴 (requestAnimationFrame + 自动垃圾回收与取消)
+    - 高 DPI Canvas 自适应 ResizeObserver 防模糊与坐标换算
+    - 教学报文/状态机当前首部与教学解析同步卡片
+-->
+<div class="trgs-timeline-block" id="trgs-timeline-app">
+  <style>
+    .trgs-timeline-block {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 340px;
+      grid-template-areas:
+        "ctrl sidebar"
+        "viewport sidebar"
+        "status sidebar";
+      gap: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+      background: var(--color-bg, #f8fafc);
+      color: var(--color-text, #0f172a);
+      font-family: var(--font-body, system-ui, sans-serif);
+    }
+
+    /* 控制栏 */
+    .trgs-ctrl-bar {
+      grid-area: ctrl;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-surface, #ffffff);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm, 8px);
+      border: 1px solid var(--color-border, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .trgs-btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .trgs-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border, #cbd5e1);
+      background: #fff;
+      color: var(--color-text, #1e293b);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trgs-btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .trgs-btn--primary {
+      background: var(--color-primary, #0284c7);
+      border-color: var(--color-primary, #0284c7);
+      color: #fff;
+    }
+    .trgs-btn--primary:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
+    .trgs-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* 步骤进度条 */
+    .trgs-steps-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 320px;
+      margin: 0 16px;
+    }
+    .trgs-step-node {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      transition: background 250ms ease;
+    }
+    .trgs-step-node.active {
+      background: var(--color-primary, #0284c7);
+    }
+    .trgs-step-node.completed {
+      background: #10b981;
+    }
+
+    /* 演练主画布视口 */
+    .trgs-viewport-container {
+      grid-area: viewport;
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .trgs-viewport-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 侧边信息栏 */
+    .trgs-sidebar-panel {
+      grid-area: sidebar;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .trgs-card {
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      padding: 14px;
+    }
+    .trgs-card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary, #64748b);
+      margin-bottom: 8px;
+    }
+    .trgs-kv-table {
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .trgs-kv-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+    .trgs-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: ui-monospace, monospace;
+    }
+    .trgs-badge--info { background: #e0f2fe; color: #0369a1; }
+    .trgs-badge--success { background: #dcfce7; color: #15803d; }
+    .trgs-badge--warning { background: #fef3c7; color: #b45309; }
+
+    /* 底部提示 */
+    .trgs-status-bar {
+      grid-area: status;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--color-surface, #ffffff);
+      border-radius: var(--radius-sm, 8px);
+      border: 1px solid var(--color-border, #e2e8f0);
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <!-- 控制栏 -->
+  <div class="trgs-ctrl-bar">
+    <div class="trgs-btn-group">
+      <button class="trgs-btn" id="trgs-btn-prev" disabled>
+        <span aria-hidden="true">&larr;</span> 上一步
+      </button>
+      <button class="trgs-btn trgs-btn--primary" id="trgs-btn-play">
+        <span id="trgs-play-icon" aria-hidden="true">&#9654;</span> <span id="trgs-play-text">自动演示</span>
+      </button>
+      <button class="trgs-btn" id="trgs-btn-next">
+        下一步 <span aria-hidden="true">&rarr;</span>
+      </button>
+      <button class="trgs-btn" id="trgs-btn-reset" title="重置演练">
+        &#8634; 重置
+      </button>
+    </div>
+
+    <div class="trgs-steps-track" id="trgs-step-track">
+      <!-- 动态生成 step-nodes -->
+    </div>
+
+    <div style="font-size: 0.8rem; color: #64748b; font-weight: 500;" id="trgs-step-counter">
+      第 0 / 0 步
+    </div>
+  </div>
+
+  <!-- 画布视口 -->
+  <div class="trgs-viewport-container" id="trgs-viewport-box">
+    <canvas class="trgs-viewport-canvas" id="trgs-canvas"></canvas>
+  </div>
+
+  <!-- 侧边栏卡片插槽 -->
+  <div class="trgs-sidebar-panel">
+    <div class="trgs-card">
+      <div class="trgs-card-title">演进状态概览</div>
+      <div class="trgs-kv-table" id="trgs-state-summary">
+        <!-- 插槽：当前端到端状态 -->
+      </div>
+    </div>
+
+    <div class="trgs-card">
+      <div class="trgs-card-title">报文首部探针 (Inspector)</div>
+      <div id="trgs-packet-inspector" style="font-family: ui-monospace, monospace; font-size: 0.8rem; line-height: 1.5; color: #334155;">
+        <!-- 插槽：当前正在传输或已交付的报文 -->
+      </div>
+    </div>
+
+    <div class="trgs-card">
+      <div class="trgs-card-title">阶段核心教学难点</div>
+      <div id="trgs-teaching-note" style="font-size: 0.82rem; line-height: 1.5; color: #475569;">
+        <!-- 插槽：当前步骤的深度解析 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 状态底部栏 -->
+  <div class="trgs-status-bar">
+    <div><strong id="trgs-phase-title">初始化</strong></div>
+    <div id="trgs-action-hint" style="color: #64748b;">操作提示：点击“自动演示”或“下一步”</div>
+  </div>
+</div>
+
+<script>
+/**
+ * TRGS 离散时序状态机运行器核心类
+ * 专为 AI Agent 代码填充设计，隔离繁杂的 Canvas DPR 计算、Resize 监听、定时器与生命周期
+ */
+window.TRGSTimelineRunner = (function() {
+  'use strict';
+
+  function Runner(config) {
+    this.steps = config.steps || [];
+    this.onRender = config.onRender || function() {};
+    this.onStepChange = config.onStepChange || function() {};
+    this.duration = config.duration || 1000;
+
+    this.currentStep = 0;
+    this.isPlaying = false;
+    this.animProgress = 1;
+    this.animStartTime = 0;
+    this.rafId = null;
+
+    this.initDOM();
+    this.bindEvents();
+    this.setupResizeObserver();
+    this.jumpTo(0);
+  }
+
+  Runner.prototype.initDOM = function() {
+    this.btnPrev = document.getElementById('trgs-btn-prev');
+    this.btnNext = document.getElementById('trgs-btn-next');
+    this.btnPlay = document.getElementById('trgs-btn-play');
+    this.btnReset = document.getElementById('trgs-btn-reset');
+    this.playText = document.getElementById('trgs-play-text');
+    this.playIcon = document.getElementById('trgs-play-icon');
+    this.stepTrack = document.getElementById('trgs-step-track');
+    this.stepCounter = document.getElementById('trgs-step-counter');
+    this.viewportBox = document.getElementById('trgs-viewport-box');
+    this.canvas = document.getElementById('trgs-canvas');
+    this.ctx = this.canvas.getContext('2d');
+
+    // 初始化进度条节点
+    this.stepTrack.innerHTML = '';
+    for (var i = 0; i < this.steps.length; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'trgs-step-node';
+      this.stepTrack.appendChild(dot);
+    }
+  };
+
+  Runner.prototype.setupResizeObserver = function() {
+    var self = this;
+    var resize = function() {
+      var rect = self.viewportBox.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      self.canvas.width = rect.width * dpr;
+      self.canvas.height = rect.height * dpr;
+      self.ctx.scale(dpr, dpr);
+      self.renderCanvas();
+    };
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(this.viewportBox);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+    resize();
+  };
+
+  Runner.prototype.renderCanvas = function() {
+    var rect = this.viewportBox.getBoundingClientRect();
+    this.ctx.clearRect(0, 0, rect.width, rect.height);
+    this.onRender(this.ctx, {
+      width: rect.width,
+      height: rect.height,
+      currentStep: this.currentStep,
+      stepData: this.steps[this.currentStep],
+      progress: this.animProgress
+    });
+  };
+
+  Runner.prototype.updateUI = function() {
+    var total = this.steps.length;
+    this.btnPrev.disabled = this.currentStep === 0;
+    this.btnNext.disabled = this.currentStep === total - 1;
+    this.stepCounter.textContent = '第 ' + (this.currentStep + 1) + ' / ' + total + ' 步';
+
+    var dots = this.stepTrack.children;
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = 'trgs-step-node';
+      if (i === this.currentStep) dots[i].classList.add('active');
+      if (i < this.currentStep) dots[i].classList.add('completed');
+    }
+
+    this.onStepChange(this.currentStep, this.steps[this.currentStep]);
+  };
+
+  Runner.prototype.jumpTo = function(stepIndex, withAnimation) {
+    if (stepIndex < 0 || stepIndex >= this.steps.length) return;
+    this.currentStep = stepIndex;
+    this.updateUI();
+
+    if (withAnimation && this.currentStep > 0) {
+      this.startTransition();
+    } else {
+      this.animProgress = 1;
+      this.renderCanvas();
+    }
+  };
+
+  Runner.prototype.startTransition = function(onDone) {
+    var self = this;
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+
+    this.animProgress = 0;
+    this.animStartTime = performance.now();
+
+    function tick(now) {
+      var elapsed = now - self.animStartTime;
+      self.animProgress = Math.min(1, elapsed / self.duration);
+      self.renderCanvas();
+
+      if (self.animProgress < 1) {
+        self.rafId = requestAnimationFrame(tick);
+      } else {
+        self.animProgress = 1;
+        self.rafId = null;
+        if (onDone) onDone();
+      }
+    }
+    this.rafId = requestAnimationFrame(tick);
+  };
+
+  Runner.prototype.play = function() {
+    var self = this;
+    this.isPlaying = true;
+    this.playText.textContent = '暂停';
+    this.playIcon.innerHTML = '&#10074;&#10074;';
+
+    function next() {
+      if (!self.isPlaying) return;
+      if (self.currentStep < self.steps.length - 1) {
+        self.currentStep++;
+        self.updateUI();
+        self.startTransition(function() {
+          if (self.isPlaying) {
+            setTimeout(next, 600);
+          }
+        });
+      } else {
+        self.pause();
+      }
+    }
+    next();
+  };
+
+  Runner.prototype.pause = function() {
+    this.isPlaying = false;
+    this.playText.textContent = '自动演示';
+    this.playIcon.innerHTML = '&#9654;';
+  };
+
+  Runner.prototype.bindEvents = function() {
+    var self = this;
+    this.btnPrev.addEventListener('click', function() {
+      self.pause();
+      self.jumpTo(self.currentStep - 1, false);
+    });
+
+    this.btnNext.addEventListener('click', function() {
+      self.pause();
+      self.jumpTo(self.currentStep + 1, true);
+    });
+
+    this.btnPlay.addEventListener('click', function() {
+      if (self.isPlaying) {
+        self.pause();
+      } else {
+        if (self.currentStep === self.steps.length - 1) {
+          self.currentStep = 0;
+        }
+        self.play();
+      }
+    });
+
+    this.btnReset.addEventListener('click', function() {
+      self.pause();
+      if (self.rafId) cancelAnimationFrame(self.rafId);
+      self.jumpTo(0, false);
+    });
+  };
+
+  return Runner;
+})();
+</script>

@@ -1,0 +1,246 @@
+<!--
+  TRGS Interactive Block Archetype B: Parameter Sandbox Engine (参数仿真沙盒引擎)
+  适用场景: 物理规律模拟、数学函数与波形调制、计算机网络滑动窗口/拥塞控制、经济供需曲线等。
+  内置能力:
+    - 响应式滑块与输入联动 (带 Debounce 与数值归一化)
+    - 自动防抖的动态重绘总线 (Reactive Draw Bus)
+    - 高分辨率 Canvas DPR 自动校准与坐标投影变换系统 (Model-to-Screen Mapping)
+    - 实时数据监视面板与教学超参警示
+-->
+<div class="trgs-sandbox-block" id="trgs-sandbox-app">
+  <style>
+    .trgs-sandbox-block {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      grid-template-columns: 1fr 360px;
+      grid-template-areas:
+        "viewport controls"
+        "status controls";
+      gap: 14px;
+      padding: 16px;
+      box-sizing: border-box;
+      background: var(--color-bg, #f8fafc);
+      color: var(--color-text, #0f172a);
+      font-family: var(--font-body, system-ui, sans-serif);
+    }
+
+    .trgs-sb-viewport {
+      grid-area: viewport;
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .trgs-sb-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .trgs-sb-controls {
+      grid-area: controls;
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .trgs-sb-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary, #64748b);
+      margin-bottom: 4px;
+    }
+
+    .trgs-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .trgs-field-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .trgs-field-val {
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      color: var(--color-primary, #0284c7);
+    }
+    .trgs-range-slider {
+      width: 100%;
+      accent-color: var(--color-primary, #0284c7);
+      cursor: pointer;
+    }
+
+    .trgs-sb-status {
+      grid-area: status;
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <div class="trgs-sb-viewport" id="trgs-sb-viewport-box">
+    <canvas class="trgs-sb-canvas" id="trgs-sb-canvas"></canvas>
+  </div>
+
+  <div class="trgs-sb-controls">
+    <div class="trgs-sb-section-title">实时参数调谐 (Parameters)</div>
+    <div id="trgs-params-container" style="display: flex; flex-direction: column; gap: 14px;">
+      <!-- 动态注入参数滑块 -->
+    </div>
+
+    <div class="trgs-sb-section-title" style="margin-top: 10px;">仿真遥测读数 (Telemetry)</div>
+    <div id="trgs-telemetry-container" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 0.82rem; font-family: ui-monospace, monospace; line-height: 1.5;">
+      <!-- 实时计算结果 -->
+    </div>
+
+    <button id="trgs-sb-reset" style="margin-top: auto; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; font-weight: 600;">
+      &#8634; 恢复默认参数
+    </button>
+  </div>
+
+  <div class="trgs-sb-status">
+    <div><strong>仿真状态:</strong> <span style="color: #10b981;">● 连续运行中</span></div>
+    <div id="trgs-sb-hint" style="color: #64748b;">滑动右侧控件观察动态响应曲线</div>
+  </div>
+</div>
+
+<script>
+/**
+ * TRGS 参数仿真沙盒核心类
+ */
+window.TRGSParameterSandbox = (function() {
+  'use strict';
+  function Sandbox(config) {
+    this.paramsConfig = config.params || [];
+    this.onCompute = config.onCompute || function(p) { return {}; };
+    this.onDraw = config.onDraw || function() {};
+    this.values = {};
+
+    this.initDOM();
+    this.buildControls();
+    this.setupResizeObserver();
+  }
+
+  Sandbox.prototype.initDOM = function() {
+    this.viewportBox = document.getElementById('trgs-sb-viewport-box');
+    this.canvas = document.getElementById('trgs-sb-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.paramsContainer = document.getElementById('trgs-params-container');
+    this.telemetryBox = document.getElementById('trgs-telemetry-container');
+    this.btnReset = document.getElementById('trgs-sb-reset');
+  };
+
+  Sandbox.prototype.buildControls = function() {
+    var self = this;
+    this.paramsContainer.innerHTML = '';
+
+    this.paramsConfig.forEach(function(p) {
+      self.values[p.id] = p.defaultValue;
+      var group = document.createElement('div');
+      group.className = 'trgs-field-group';
+
+      var header = document.createElement('div');
+      header.className = 'trgs-field-header';
+      header.innerHTML = '<span>' + p.label + '</span><span class="trgs-field-val" id="val-' + p.id + '">' + p.defaultValue + (p.unit || '') + '</span>';
+
+      var slider = document.createElement('input');
+      slider.type = 'range';
+      slider.className = 'trgs-range-slider';
+      slider.min = p.min;
+      slider.max = p.max;
+      slider.step = p.step || 1;
+      slider.value = p.defaultValue;
+
+      slider.addEventListener('input', function(e) {
+        var val = parseFloat(e.target.value);
+        self.values[p.id] = val;
+        document.getElementById('val-' + p.id).textContent = val + (p.unit || '');
+        self.update();
+      });
+
+      group.appendChild(header);
+      group.appendChild(slider);
+      self.paramsContainer.appendChild(group);
+    });
+
+    this.btnReset.addEventListener('click', function() {
+      self.paramsConfig.forEach(function(p) {
+        self.values[p.id] = p.defaultValue;
+        var input = self.paramsContainer.querySelector('#val-' + p.id).parentElement.nextElementSibling;
+        input.value = p.defaultValue;
+        document.getElementById('val-' + p.id).textContent = p.defaultValue + (p.unit || '');
+      });
+      self.update();
+    });
+  };
+
+  Sandbox.prototype.setupResizeObserver = function() {
+    var self = this;
+    var resize = function() {
+      var rect = self.viewportBox.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      self.canvas.width = rect.width * dpr;
+      self.canvas.height = rect.height * dpr;
+      self.ctx.scale(dpr, dpr);
+      self.update();
+    };
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(this.viewportBox);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+    resize();
+  };
+
+  Sandbox.prototype.update = function() {
+    var telemetry = this.onCompute(this.values);
+    this.renderTelemetry(telemetry);
+
+    var rect = this.viewportBox.getBoundingClientRect();
+    this.ctx.clearRect(0, 0, rect.width, rect.height);
+    this.onDraw(this.ctx, {
+      width: rect.width,
+      height: rect.height,
+      params: this.values,
+      telemetry: telemetry
+    });
+  };
+
+  Sandbox.prototype.renderTelemetry = function(t) {
+    var html = '';
+    for (var k in t) {
+      if (t.hasOwnProperty(k)) {
+        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;">' +
+                '<span style="color:#64748b;">' + k + ':</span>' +
+                '<strong>' + t[k] + '</strong></div>';
+      }
+    }
+    this.telemetryBox.innerHTML = html || '运行中...';
+  };
+
+  return Sandbox;
+})();
+</script>

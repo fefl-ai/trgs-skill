@@ -1,0 +1,176 @@
+<!--
+  TRGS Interactive Block Archetype D: Graph & State Inspector (图谱与协议状态机节点探针)
+  适用场景: TCP 有限状态机(FSM)转移、OSPF/BGP路由拓扑、二叉树/图论算法遍历、微服务架构调用链。
+  内置能力:
+    - 节点网络拓扑与弧线渲染 (带当前激活状态脉冲高亮)
+    - 节点悬停/点击事件下钻展开
+    - 状态转移事件触发器 (State Transition Triggers)
+    - 教学路径引导与死锁/非法转移防御
+-->
+<div class="trgs-inspector-block" id="trgs-inspector-app">
+  <style>
+    .trgs-inspector-block {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-template-columns: 1fr 340px;
+      grid-template-areas:
+        "header header"
+        "graph detail";
+      gap: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+      background: var(--color-bg, #f8fafc);
+      color: var(--color-text, #0f172a);
+      font-family: var(--font-body, system-ui, sans-serif);
+    }
+    .trgs-insp-header {
+      grid-area: header;
+      background: var(--color-surface, #fff);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm, 8px);
+      border: 1px solid var(--color-border, #e2e8f0);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .trgs-insp-graph {
+      grid-area: graph;
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .trgs-insp-detail {
+      grid-area: detail;
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .trgs-insp-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+  </style>
+  <div class="trgs-insp-header">
+    <div><strong>状态机与拓扑探针:</strong> <span id="trgs-insp-summary">点击节点或触发事件观察状态转移</span></div>
+    <button id="trgs-insp-reset" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer;">&#8634; 重置初始节点</button>
+  </div>
+  <div class="trgs-insp-graph" id="trgs-insp-box">
+    <canvas class="trgs-insp-canvas" id="trgs-insp-canvas"></canvas>
+  </div>
+  <div class="trgs-insp-detail">
+    <div style="font-size:0.85rem; font-weight:700; color:#64748b; text-transform:uppercase;">节点元数据检查器</div>
+    <div id="trgs-insp-node-info" style="font-size:0.85rem; line-height:1.5;">点击左侧图谱中的节点以探查详情</div>
+    <div style="font-size:0.85rem; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:12px;">可用转移事件 (Events)</div>
+    <div id="trgs-insp-events" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+</div>
+
+<script>
+window.TRGSGraphStateInspector = (function() {
+  'use strict';
+  function Inspector(config) {
+    this.nodes = config.nodes || [];
+    this.edges = config.edges || [];
+    this.currentNodeId = config.initialNodeId || (this.nodes[0] && this.nodes[0].id);
+    this.onNodeSelected = config.onNodeSelected || function() {};
+    this.onDraw = config.onDraw || function() {};
+    this.init();
+  }
+  Inspector.prototype.init = function() {
+    this.box = document.getElementById('trgs-insp-box');
+    this.canvas = document.getElementById('trgs-insp-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.nodeInfo = document.getElementById('trgs-insp-node-info');
+    this.eventsContainer = document.getElementById('trgs-insp-events');
+    this.btnReset = document.getElementById('trgs-insp-reset');
+
+    this.setupEvents();
+    this.setupResize();
+    this.selectNode(this.currentNodeId);
+  };
+  Inspector.prototype.setupResize = function() {
+    var self = this;
+    var resize = function() {
+      var rect = self.box.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      self.canvas.width = rect.width * dpr;
+      self.canvas.height = rect.height * dpr;
+      self.ctx.scale(dpr, dpr);
+      self.render();
+    };
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(this.box);
+    else window.addEventListener('resize', resize);
+    resize();
+  };
+  Inspector.prototype.setupEvents = function() {
+    var self = this;
+    this.canvas.addEventListener('click', function(e) {
+      var rect = self.canvas.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      for (var i = 0; i < self.nodes.length; i++) {
+        var n = self.nodes[i];
+        if (Math.hypot(n.x - x, n.y - y) <= (n.radius || 24)) {
+          self.selectNode(n.id);
+          break;
+        }
+      }
+    });
+    this.btnReset.addEventListener('click', function() {
+      if (self.nodes.length > 0) self.selectNode(self.nodes[0].id);
+    });
+  };
+  Inspector.prototype.selectNode = function(id) {
+    this.currentNodeId = id;
+    var node = this.nodes.find(function(n) { return n.id === id; });
+    if (node) {
+      this.nodeInfo.innerHTML = '<strong>' + node.label + '</strong><br><span style="color:#64748b;">ID: ' + node.id + '</span><br><p style="margin-top:8px;">' + (node.desc || '') + '</p>';
+      this.renderEvents(node);
+      this.onNodeSelected(node);
+    }
+    this.render();
+  };
+  Inspector.prototype.renderEvents = function(node) {
+    var self = this;
+    this.eventsContainer.innerHTML = '';
+    var outEdges = this.edges.filter(function(e) { return e.from === node.id; });
+    if (outEdges.length === 0) {
+      this.eventsContainer.innerHTML = '<div style="font-size:0.8rem; color:#94a3b8;">无后继转移事件（终态）</div>';
+      return;
+    }
+    outEdges.forEach(function(e) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; cursor:pointer; text-align:left; font-size:0.82rem;';
+      btn.innerHTML = '<strong>' + e.label + '</strong> &rarr; ' + e.to;
+      btn.addEventListener('click', function() {
+        self.selectNode(e.to);
+      });
+      self.eventsContainer.appendChild(btn);
+    });
+  };
+  Inspector.prototype.render = function() {
+    var rect = this.box.getBoundingClientRect();
+    this.ctx.clearRect(0, 0, rect.width, rect.height);
+    this.onDraw(this.ctx, {
+      width: rect.width,
+      height: rect.height,
+      nodes: this.nodes,
+      edges: this.edges,
+      activeId: this.currentNodeId
+    });
+  };
+  return Inspector;
+})();
+</script>

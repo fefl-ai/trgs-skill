@@ -97,6 +97,7 @@ skill/
 ├── templates/
 │   ├── ppt-base.html            ← PPT HTML 骨架模板
 │   ├── interactive-base.html    ← 交互组件 HTML 骨架模板
+│   └── interactive-blocks/      ← 4 大工业级状态机积木（时序演进/参数沙盒/磁吸装配/状态探针）
 │   └── portal-base.html         ← 课程导航大厅 Portal 模板
 ├── rules/
 │   └── generation-rules.md      ← 技术约束 + 降级策略

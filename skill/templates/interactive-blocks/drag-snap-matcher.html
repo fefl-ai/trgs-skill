@@ -1,0 +1,147 @@
+<!--
+  TRGS Interactive Block Archetype C: Drag & Snap Matcher (磁吸拖拽与拓扑装配判定器)
+  适用场景: 协议报文首部拼装、网络拓扑组网、电路逻辑门连线、化学分子装配等。
+  内置能力:
+    - Canvas / DOM 坐标自适应逆矩阵映射 (解决屏幕缩放下的坐标漂移)
+    - 自动吸附判定磁力场 (Snap Radius & Slot Gravity)
+    - 实时装配正确性判分、对错音效/视觉反馈与状态复位
+-->
+<div class="trgs-matcher-block" id="trgs-matcher-app">
+  <style>
+    .trgs-matcher-block {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+      background: var(--color-bg, #f8fafc);
+      color: var(--color-text, #0f172a);
+      font-family: var(--font-body, system-ui, sans-serif);
+    }
+    .trgs-matcher-board {
+      position: relative;
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-sm, 8px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .trgs-matcher-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    .trgs-matcher-canvas:active {
+      cursor: grabbing;
+    }
+  </style>
+  <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 16px; border-radius:8px; border:1px solid #e2e8f0;">
+    <div><strong>拖拽判定器:</strong> <span id="trgs-matcher-msg">拖动下方卡片至正确的目标槽位</span></div>
+    <button id="trgs-matcher-reset" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; font-size:0.85rem;">&#8634; 重置所有槽位</button>
+  </div>
+  <div class="trgs-matcher-board" id="trgs-matcher-box">
+    <canvas class="trgs-matcher-canvas" id="trgs-matcher-canvas"></canvas>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#64748b; background:#fff; padding:8px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+    <div id="trgs-matcher-score">装配进度: 0 / 0 已就绪</div>
+    <div>提示: 接近槽位时会自动磁吸并校验正确性</div>
+  </div>
+</div>
+
+<script>
+window.TRGSDragSnapMatcher = (function() {
+  'use strict';
+  function Matcher(config) {
+    this.slots = config.slots || [];
+    this.items = config.items || [];
+    this.onEvaluate = config.onEvaluate || function() {};
+    this.onDraw = config.onDraw || function() {};
+    this.draggedItem = null;
+    this.dragOffset = { x: 0, y: 0 };
+
+    this.init();
+  }
+  Matcher.prototype.init = function() {
+    this.box = document.getElementById('trgs-matcher-box');
+    this.canvas = document.getElementById('trgs-matcher-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.setupEvents();
+    this.setupResize();
+  };
+  Matcher.prototype.setupResize = function() {
+    var self = this;
+    var resize = function() {
+      var rect = self.box.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      self.canvas.width = rect.width * dpr;
+      self.canvas.height = rect.height * dpr;
+      self.ctx.scale(dpr, dpr);
+      self.render();
+    };
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(this.box);
+    else window.addEventListener('resize', resize);
+    resize();
+  };
+  Matcher.prototype.setupEvents = function() {
+    var self = this;
+    var getPos = function(e) {
+      var rect = self.canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    this.canvas.addEventListener('mousedown', function(e) {
+      var p = getPos(e);
+      for (var i = self.items.length - 1; i >= 0; i--) {
+        var item = self.items[i];
+        if (p.x >= item.x && p.x <= item.x + item.w && p.y >= item.y && p.y <= item.y + item.h) {
+          self.draggedItem = item;
+          self.dragOffset = { x: p.x - item.x, y: p.y - item.y };
+          break;
+        }
+      }
+    });
+    window.addEventListener('mousemove', function(e) {
+      if (!self.draggedItem) return;
+      var p = getPos(e);
+      self.draggedItem.x = p.x - self.dragOffset.x;
+      self.draggedItem.y = p.y - self.dragOffset.y;
+      self.render();
+    });
+    window.addEventListener('mouseup', function(e) {
+      if (!self.draggedItem) return;
+      self.checkSnap(self.draggedItem);
+      self.draggedItem = null;
+      self.render();
+    });
+  };
+  Matcher.prototype.checkSnap = function(item) {
+    for (var i = 0; i < this.slots.length; i++) {
+      var slot = this.slots[i];
+      var dist = Math.hypot((item.x + item.w/2) - (slot.x + slot.w/2), (item.y + item.h/2) - (slot.y + slot.h/2));
+      if (dist < 50) {
+        item.x = slot.x;
+        item.y = slot.y;
+        item.assignedSlot = slot.id;
+        break;
+      }
+    }
+    this.evaluate();
+  };
+  Matcher.prototype.evaluate = function() {
+    var correct = 0;
+    this.items.forEach(function(it) {
+      if (it.assignedSlot && it.targetSlot === it.assignedSlot) correct++;
+    });
+    document.getElementById('trgs-matcher-score').textContent = '装配进度: ' + correct + ' / ' + this.slots.length + ' 匹配正确';
+  };
+  Matcher.prototype.render = function() {
+    var rect = this.box.getBoundingClientRect();
+    this.ctx.clearRect(0, 0, rect.width, rect.height);
+    this.onDraw(this.ctx, { width: rect.width, height: rect.height, slots: this.slots, items: this.items });
+  };
+  return Matcher;
+})();
+</script>

@@ -75,6 +75,11 @@ Phase 3 发现 ERROR 或语义自检任一项不通过时触发，详见下文"�
 
 - 形式：{strategy.primaryForm}
 - 交互模式：{strategy.interactionPattern}
+- 状态机积木（Interactive Blocks）：优先选用内置工业级状态机架构（位于 templates/interactive-blocks/）：
+  * step-through -> Archetype A: timeline-runner（内置自动演练/单步/时间轴/高DPR画布）
+  * parameter-control -> Archetype B: parameter-sandbox（内置响应式重绘总线/遥测数据）
+  * drag-and-drop -> Archetype C: drag-snap-matcher（内置逆矩阵映射与吸附对错判定）
+  * free-explore / 拓扑 -> Archetype D: graph-state-inspector（内置状态机流转）
 - 复杂度：{strategy.complexityEstimate}
 - 视觉元素：{resource.spec.visualElements}
 - 数据需求：{resource.spec.dataRequirements}

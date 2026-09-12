@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="ocean">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCP 三次握手与状态转换交互演练 (演进后)</title>
+  <style>
+    :root, [data-theme="ocean"] {
+      --color-primary: #0284c7;
+      --color-secondary: #0369a1;
+      --color-accent: #f59e0b;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-text-secondary: #64748b;
+      --color-border: #e2e8f0;
+      --color-success: #10b981;
+      --color-client: #0284c7;
+      --color-server: #0d9488;
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 360px;
+      grid-template-areas:
+        "header header"
+        "stage sidebar"
+        "footer footer";
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      grid-area: header;
+      padding: 12px 24px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { font-size: 1.15rem; color: var(--color-primary); font-weight: 700; }
+    .badge-v2 {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .stage {
+      grid-area: stage;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    /* 控制栏 */
+    .ctrl-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-surface);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+      background: #fff;
+      color: var(--color-text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .btn--primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+    .btn--primary:hover:not(:disabled) {
+      background: var(--color-secondary);
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .steps-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 320px;
+      margin: 0 16px;
+    }
+    .step-node {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      transition: background 250ms ease;
+    }
+    .step-node.active { background: var(--color-primary); }
+    .step-node.completed { background: var(--color-success); }
+
+    /* 画布视口 */
+    .viewport-box {
+      flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 侧边栏 */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--color-surface);
+      border-left: 1px solid var(--color-border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+    }
+    .kv-table {
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .state-tag {
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .state-tag--client { background: #e0f2fe; color: #0284c7; }
+    .state-tag--server { background: #ccfbf1; color: #0f766e; }
+
+    .packet-view {
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 10px;
+      border-radius: 6px;
+      line-height: 1.45;
+      min-height: 70px;
+    }
+
+    footer {
+      grid-area: footer;
+      padding: 10px 24px;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TCP 三次握手与状态转换交互演练</h1>
+    <div class="badge-v2">
+      <span>★</span>
+      <span>TRGS v2.0 积木架构 (After: Timeline-Runner)</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="ctrl-bar">
+      <div class="btn-group">
+        <button class="btn" id="trgs-btn-prev" disabled>&larr; 上一步</button>
+        <button class="btn btn--primary" id="trgs-btn-play">
+          <span id="trgs-play-icon">&#9654;</span> <span id="trgs-play-text">自动演示</span>
+        </button>
+        <button class="btn" id="trgs-btn-next">下一步 &rarr;</button>
+        <button class="btn" id="trgs-btn-reset" title="重置演练">&#8634; 重置</button>
+      </div>
+
+      <div class="steps-track" id="trgs-step-track"></div>
+
+      <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;" id="trgs-step-counter">
+        第 1 / 4 步
+      </div>
+    </div>
+
+    <div class="viewport-box" id="trgs-viewport-box">
+      <canvas id="trgs-canvas"></canvas>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="card">
+      <div class="card-title">实体当前状态机</div>
+      <div class="kv-table" id="trgs-state-summary">
+        <div class="kv-row">
+          <span>客户端状态 (Client)</span>
+          <span class="state-tag state-tag--client" id="lbl-client-state">CLOSED</span>
+        </div>
+        <div class="kv-row">
+          <span>服务端状态 (Server)</span>
+          <span class="state-tag state-tag--server" id="lbl-server-state">LISTEN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">传输信道与首部探针 (Packet Inspector)</div>
+      <div class="packet-view" id="trgs-packet-inspector">
+        等待握手启动...
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">教学难点与启发分析</div>
+      <div id="trgs-teaching-note" style="font-size: 0.82rem; line-height: 1.5; color: #475569;">
+        <!-- 动态解析 -->
+      </div>
+    </div>
+  </aside>
+
+  <footer>
+    <div>当前阶段：<strong id="trgs-phase-title">初始化</strong></div>
+    <div style="color: #64748b;" id="trgs-action-hint">操作提示：点击“自动演示”或“下一步”</div>
+  </footer>
+
+  <script>
+    /**
+     * TRGS 状态机积木集成：
+     * 1. 业务只需定义纯数据 (Steps)
+     * 2. 编写无副作用的 onRender 与 onStepChange 钩子
+     * 3. 自动演示、暂停控制、DPR高清缩放、Resize 监听全由 Runner 状态机统一托管
+     */
+    (function() {
+      'use strict';
+
+      var steps = [
+        {
+          title: "阶段 0: 初始静默监听",
+          clientState: "CLOSED",
+          serverState: "LISTEN",
+          packetLabel: "无空中传输报文",
+          packetCode: "SYN=0, ACK=0, seq=0, ack=0",
+          note: "服务端 Socket 执行 listen() 处于被动监听；客户端准备发起主动连接。",
+          hint: "点击【自动演示】连续观看完整握手，或点击【下一步】单步推演。",
+          activeAnim: null
+        },
+        {
+          title: "阶段 1: 客户端发起连接 (SYN)",
+          clientState: "SYN-SENT",
+          serverState: "LISTEN",
+          packetLabel: "第 1 次握手: SYN 报文",
+          packetCode: "SYN=1, ACK=0, seq=x(100), ack=0",
+          note: "客户端主动发送 SYN，进入 SYN-SENT 状态。同时消耗一个序列号(seq=100)。这是客户端单向通知‘我要建立连接’。",
+          hint: "注意：SYN=1 报文即使不携带数据，也强制消耗一个序号。",
+          activeAnim: { from: 'client', to: 'server', label: 'SYN=1, seq=100' }
+        },
+        {
+          title: "阶段 2: 服务端确认并回复 (SYN+ACK)",
+          clientState: "SYN-SENT",
+          serverState: "SYN-RCVD",
+          packetLabel: "第 2 次握手: SYN+ACK 报文",
+          packetCode: "SYN=1, ACK=1, seq=y(300), ack=101",
+          note: "服务端回复 SYN+ACK，既确认了客户端序号(ack=101)，又分配 TCB 资源宣告自身初始序列号(seq=300)，进入 SYN-RCVD。",
+          hint: "关键思考：如果此时握手就结束(两次握手)，服务端已分配资源，但若客户端根本没收到该回复，服务端将永久挂起。",
+          activeAnim: { from: 'server', to: 'client', label: 'SYN=1, ACK=1, seq=300, ack=101' }
+        },
+        {
+          title: "阶段 3: 客户端最终确认 (ACK 完成)",
+          clientState: "ESTABLISHED",
+          serverState: "ESTABLISHED",
+          packetLabel: "第 3 次握手: ACK 报文",
+          packetCode: "SYN=0, ACK=1, seq=101, ack=301",
+          note: "客户端收到服务端 SYN 后确认(ack=301)，双方正式进入 ESTABLISHED 状态。此时全双工可靠连接正式开通，可携带应用层数据。",
+          hint: "握手圆满完成！双方均确认了对方具有接收和发送的双向能力。",
+          activeAnim: { from: 'client', to: 'server', label: 'ACK=1, seq=101, ack=301' }
+        }
+      ];
+
+      // 状态机积木核心实现
+      function TimelineRunner(cfg) {
+        this.steps = cfg.steps;
+        this.onRender = cfg.onRender;
+        this.onStepChange = cfg.onStepChange;
+        this.duration = cfg.duration || 900;
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.animProgress = 1;
+        this.rafId = null;
+
+        this.initDOM();
+        this.bindEvents();
+        this.setupResize();
+        this.jumpTo(0);
+      }
+
+      TimelineRunner.prototype.initDOM = function() {
+        this.btnPrev = document.getElementById('trgs-btn-prev');
+        this.btnNext = document.getElementById('trgs-btn-next');
+        this.btnPlay = document.getElementById('trgs-btn-play');
+        this.btnReset = document.getElementById('trgs-btn-reset');
+        this.playText = document.getElementById('trgs-play-text');
+        this.playIcon = document.getElementById('trgs-play-icon');
+        this.track = document.getElementById('trgs-step-track');
+        this.counter = document.getElementById('trgs-step-counter');
+        this.viewport = document.getElementById('trgs-viewport-box');
+        this.canvas = document.getElementById('trgs-canvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.track.innerHTML = '';
+        for (var i = 0; i < this.steps.length; i++) {
+          var dot = document.createElement('div');
+          dot.className = 'step-node';
+          this.track.appendChild(dot);
+        }
+      };
+
+      TimelineRunner.prototype.setupResize = function() {
+        var self = this;
+        var onResize = function() {
+          var rect = self.viewport.getBoundingClientRect();
+          var dpr = window.devicePixelRatio || 1;
+          self.canvas.width = rect.width * dpr;
+          self.canvas.height = rect.height * dpr;
+          self.ctx.scale(dpr, dpr);
+          self.render();
+        };
+        if (window.ResizeObserver) new ResizeObserver(onResize).observe(this.viewport);
+        else window.addEventListener('resize', onResize);
+        onResize();
+      };
+
+      TimelineRunner.prototype.render = function() {
+        var rect = this.viewport.getBoundingClientRect();
+        this.ctx.clearRect(0, 0, rect.width, rect.height);
+        this.onRender(this.ctx, {
+          w: rect.width,
+          h: rect.height,
+          step: this.currentStep,
+          data: this.steps[this.currentStep],
+          progress: this.animProgress
+        });
+      };
+
+      TimelineRunner.prototype.updateUI = function() {
+        var total = this.steps.length;
+        this.btnPrev.disabled = this.currentStep === 0;
+        this.btnNext.disabled = this.currentStep === total - 1;
+        this.counter.textContent = '第 ' + (this.currentStep + 1) + ' / ' + total + ' 步';
+
+        var dots = this.track.children;
+        for (var i = 0; i < dots.length; i++) {
+          dots[i].className = 'step-node';
+          if (i === this.currentStep) dots[i].classList.add('active');
+          if (i < this.currentStep) dots[i].classList.add('completed');
+        }
+        this.onStepChange(this.currentStep, this.steps[this.currentStep]);
+      };
+
+      TimelineRunner.prototype.jumpTo = function(idx, animated) {
+        this.currentStep = idx;
+        this.updateUI();
+        if (animated && idx > 0) {
+          this.startAnim();
+        } else {
+          this.animProgress = 1;
+          this.render();
+        }
+      };
+
+      TimelineRunner.prototype.startAnim = function(cb) {
+        var self = this;
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        this.animProgress = 0;
+        var start = performance.now();
+
+        function tick(now) {
+          var el = now - start;
+          self.animProgress = Math.min(1, el / self.duration);
+          self.render();
+          if (self.animProgress < 1) {
+            self.rafId = requestAnimationFrame(tick);
+          } else {
+            self.animProgress = 1;
+            self.rafId = null;
+            if (cb) cb();
+          }
+        }
+        this.rafId = requestAnimationFrame(tick);
+      };
+
+      TimelineRunner.prototype.play = function() {
+        var self = this;
+        this.isPlaying = true;
+        this.playText.textContent = '暂停演示';
+        this.playIcon.innerHTML = '&#10074;&#10074;';
+
+        function stepNext() {
+          if (!self.isPlaying) return;
+          if (self.currentStep < self.steps.length - 1) {
+            self.currentStep++;
+            self.updateUI();
+            self.startAnim(function() {
+              if (self.isPlaying) setTimeout(stepNext, 800);
+            });
+          } else {
+            self.pause();
+          }
+        }
+        stepNext();
+      };
+
+      TimelineRunner.prototype.pause = function() {
+        this.isPlaying = false;
+        this.playText.textContent = '自动演示';
+        this.playIcon.innerHTML = '&#9654;';
+      };
+
+      TimelineRunner.prototype.bindEvents = function() {
+        var self = this;
+        this.btnPrev.addEventListener('click', function() {
+          self.pause();
+          self.jumpTo(self.currentStep - 1, false);
+        });
+        this.btnNext.addEventListener('click', function() {
+          self.pause();
+          self.jumpTo(self.currentStep + 1, true);
+        });
+        this.btnPlay.addEventListener('click', function() {
+          if (self.isPlaying) self.pause();
+          else {
+            if (self.currentStep === self.steps.length - 1) self.currentStep = 0;
+            self.play();
+          }
+        });
+        this.btnReset.addEventListener('click', function() {
+          self.pause();
+          self.jumpTo(0, false);
+        });
+      };
+
+      // 实例化积木
+      var runner = new TimelineRunner({
+        steps: steps,
+        duration: 850,
+        onStepChange: function(stepIdx, data) {
+          document.getElementById('trgs-phase-title').textContent = data.title;
+          document.getElementById('trgs-action-hint').textContent = '操作提示：' + data.hint;
+          document.getElementById('lbl-client-state').textContent = data.clientState;
+          document.getElementById('lbl-server-state').textContent = data.serverState;
+          document.getElementById('trgs-packet-inspector').innerHTML =
+            '<strong>[' + data.packetLabel + ']</strong><br>' +
+            '<span style="color:#38bdf8;">' + data.packetCode + '</span>';
+          document.getElementById('trgs-teaching-note').innerHTML = data.note;
+        },
+        onRender: function(ctx, scene) {
+          var w = scene.w;
+          var h = scene.h;
+          var clientX = Math.floor(w * 0.22);
+          var serverX = Math.floor(w * 0.78);
+
+          // 1. 绘制网格背景
+          ctx.strokeStyle = '#f1f5f9';
+          ctx.lineWidth = 1;
+          for (var x = 0; x < w; x += 30) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+          }
+          for (var y = 0; y < h; y += 30) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+          }
+
+          // 2. 绘制端主机节点卡片
+          function drawHost(x, y, title, subtitle, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.roundRect(x - 70, y, 140, 56, 8);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, x, y + 24);
+
+            ctx.font = '11px ui-monospace, monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.fillText(subtitle, x, y + 44);
+          }
+
+          drawHost(clientX, 36, 'Client (客户端)', '192.168.1.10', '#0284c7');
+          drawHost(serverX, 36, 'Server (服务端)', '10.0.0.1 : 80', '#0d9488');
+
+          // 3. 绘制垂直时间标尺线
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 6]);
+
+          ctx.beginPath(); ctx.moveTo(clientX, 96); ctx.lineTo(clientX, h - 30); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(serverX, 96); ctx.lineTo(serverX, h - 30); ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 4. 绘制各阶段的历史时序斜线
+          var trajectory = [
+            { fromX: clientX, fromY: 140, toX: serverX, toY: 210, label: '① SYN (seq=100)' },
+            { fromX: serverX, fromY: 230, toX: clientX, toY: 300, label: '② SYN+ACK (seq=300, ack=101)' },
+            { fromX: clientX, fromY: 320, toX: serverX, toY: 390, label: '③ ACK (seq=101, ack=301)' }
+          ];
+
+          for (var i = 0; i < trajectory.length; i++) {
+            var stepNum = i + 1;
+            if (scene.step >= stepNum) {
+              var tr = trajectory[i];
+              var isCurrent = (scene.step === stepNum);
+
+              ctx.strokeStyle = isCurrent ? '#f59e0b' : '#94a3b8';
+              ctx.lineWidth = isCurrent ? 3 : 1.5;
+              ctx.beginPath();
+              ctx.moveTo(tr.fromX, tr.fromY);
+              ctx.lineTo(tr.toX, tr.toY);
+              ctx.stroke();
+
+              // 绘制带背景的文字标签
+              var midX = (tr.fromX + tr.toX) / 2;
+              var midY = (tr.fromY + tr.toY) / 2 - 10;
+              ctx.fillStyle = isCurrent ? '#d97706' : '#64748b';
+              ctx.font = 'bold 12px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText(tr.label, midX, midY);
+
+              // 如果是当前步，绘制动画飞包粒子
+              if (isCurrent && scene.data.activeAnim) {
+                var p = scene.progress;
+                var curX = tr.fromX + (tr.toX - tr.fromX) * p;
+                var curY = tr.fromY + (tr.toY - tr.fromY) * p;
+
+                // 光晕与光点
+                ctx.save();
+                ctx.shadowColor = 'rgba(245, 158, 11, 0.6)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(curX, curY, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // 飞行动画提示浮签
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 11px monospace';
+                ctx.fillText(scene.data.activeAnim.label, curX, curY - 14);
+              }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
